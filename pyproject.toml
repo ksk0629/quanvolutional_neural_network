@@ -9,7 +9,13 @@ packages = [{include = "quanvolutional_neural_network"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
+qiskit = "^1.1.2"
+torch = "^2.4.0"
 
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+notebook = "^7.2.1"
 
 [build-system]
 requires = ["poetry-core"]

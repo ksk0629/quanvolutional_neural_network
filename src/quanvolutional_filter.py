@@ -162,5 +162,8 @@ class QuanvolutionalFilter:
     def draw(self):
         """Draw the circuit.
         """
-        self.circuit.draw(output="mpl")
+        try:
+            return self.circuit.draw(output="mpl")
+        except:
+            print(self.circuit.draw())
  

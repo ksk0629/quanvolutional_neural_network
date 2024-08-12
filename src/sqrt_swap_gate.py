@@ -1,3 +1,4 @@
+import numpy as np
 import qiskit
 
 
@@ -23,4 +24,4 @@ class SqrtSwapGate():
 
         :return qiskit.circuit.Gate: the square root swap gate.
         """
-        return self.__qc.to_gate()
+        return self.__qc.to_instruction()

@@ -26,12 +26,19 @@ class QuanvolutionalFilter:
         # Step 2: Select a two-qubit gate according to the connection probabilities.
         self.selected_gates = []
         # Define the set of two-qubits gates.
-        self.two_qubit_gates = [
+        self.two_qubit_four_parameterised_gates = [
+            qiskit.circuit.library.CUGate
+        ]
+        sqrt_swap_gate = SqrtSwapGate()
+        self.two_qubit_non_parameterised_gates = [
             qiskit.circuit.library.CXGate(),
             qiskit.circuit.library.SwapGate(),
-            SqrtSwapGate(),
-            qiskit.circuit.library.CUGate
-        ]  # according to the paper
+            sqrt_swap_gate.get_gate()
+        ]
+        self.two_qubit_gates = (
+            self.two_qubit_four_parameterised_gates + \
+            self.two_qubit_non_parameterised_gates
+        )
         # Select two-qubit gates to the circuit.
         self.__select_two_qubit_gates()
         
@@ -56,7 +63,7 @@ class QuanvolutionalFilter:
             self.one_qubit_non_parametrised_gates
         )
         # Select one-qubit gates.
-        self.num_one_qubit_gates = np.random.rand() * (2 * self.num_qubits**2)
+        self.num_one_qubit_gates = np.random.randint(low=0, high=2 * self.num_qubits**2-1)
         self.__select_one_qubit_gates()
         
         # Step 4: Apply the randomly selected gates at an random order.
@@ -77,7 +84,7 @@ class QuanvolutionalFilter:
             name="decoded_data"
         )
         self.circuit = qiskit.QuantumCircuit(
-            [self.quantum_register, self.classical_register],
+            self.quantum_register, self.classical_register,
             name="quanvolutional_filter"
         )
         
@@ -85,7 +92,7 @@ class QuanvolutionalFilter:
         """Randomly assign a connection probability between each qubit.
         """
         for index in range(self.num_qubits):
-            for next_index in range(index, self.num_qubits):
+            for next_index in range(index+1, self.num_qubits):
                 # Get a random connection probability.
                 connection_probability = np.random.rand()
                 
@@ -104,17 +111,17 @@ class QuanvolutionalFilter:
             selected_gate = random.choice(self.two_qubit_gates)
             
             # Set random parameters to the CU gate.
-            if selected_gate == qiskit.circuit.library.CUGate:
-                cu_params = np.random.rand(4) * (2 * np.pi)
+            if selected_gate in self.two_qubit_four_parameterised_gates:
+                four_params = np.random.rand(4) * (2 * np.pi)
                 selected_gate = qiskit.circuit.library.CUGate(
-                    theta=cu_params[0],
-                    phi=cu_params[1],
-                    lam=cu_params[2],
-                    gamma=cu_params[3]
+                    theta=four_params[0],
+                    phi=four_params[1],
+                    lam=four_params[2],
+                    gamma=four_params[3]
                 )
             
             # Shuffle the qubits to rnadomly decide on the target and controlled qubits.
-            shuffled_key = key
+            shuffled_key = [*key]  # key is tuple. Need to cast to list.
             if value <= 0.75:
                 shuffled_key[0] = key[1]
                 shuffled_key[1] = key[0]
@@ -131,11 +138,11 @@ class QuanvolutionalFilter:
             
             # Set random parameters to the CU gate.
             if selected_gate in self.one_qubit_one_parameterised_gates:
-                gate_params = np.random.rand(1) * (2 * np.pi)
-                selected_gate = selected_gate(gate_params[0])
+                gate_one_param = np.random.rand(1) * (2 * np.pi)
+                selected_gate = selected_gate(gate_one_param[0])
             elif selected_gate in self.one_qubit_three_parameterised_gates:
-                gate_params = np.random.rand(3) * (2 * np.pi)
-                selected_gate = selected_gate(gate_params[0], gate_params[1], gate_params[3])
+                gate_three_params = np.random.rand(3) * (2 * np.pi)
+                selected_gate = selected_gate(gate_three_params[0], gate_three_params[1], gate_three_params[2])
             
             # Decide the target qubit.
             target_qubit = np.random.randint(low=0, high=self.num_qubits-1)
@@ -151,3 +158,9 @@ class QuanvolutionalFilter:
         
         for gate, qubits in self.selected_gates:
             self.circuit.append(gate, qubits)
+
+    def draw(self):
+        """Draw the circuit.
+        """
+        self.circuit.draw(output="mpl")
+ 

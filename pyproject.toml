@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "quanvolutional-neural-network"
+version = "0.1.0"
+description = ""
+authors = ["ksk0629 <neko.to.tomodachi.muse@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "quanvolutional_neural_network"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+qiskit = "^1.1.2"
+torch = "^2.4.0"
+qiskit-aer = "^0.14.2"
+matplotlib = "^3.9.1.post1"
+pylatexenc = "^2.10"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+notebook = "^7.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

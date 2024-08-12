@@ -2,6 +2,7 @@ import random
 
 import numpy as np
 import qiskit
+import qiskit_aer
 
 from sqrt_swap_gate import SqrtSwapGate
 
@@ -10,10 +11,11 @@ class QuanvolutionalFilter:
     """Quanvolutional filter class.
     """
     def __init__(self, kernel_size: tuple[int, int]):
-        """Initialise the circuit.
+        """Prepare the circuit.
 
         :param tuple[int, int] kernel_size: the kernel size.
         """
+        # Get the number of qubits.
         self.num_qubits: int = kernel_size[0] * kernel_size[1]
         
         # Step 0: Build a quantum circuit as a filter.
@@ -70,18 +72,18 @@ class QuanvolutionalFilter:
         self.__apply_selected_gates()
         
         # Step 5: Set measurements to the lot qubits.
-        self.circuit.measure_all()
+        self.circuit.measure(self.quantum_register, self.classical_register)
 
     def __build_initial_circuit(self):
         """Build the initial ciruit.
         """
         self.quantum_register = qiskit.QuantumRegister(
             size=self.num_qubits,
-            name="encoded_data"
+            name="quantum_register"
         )
         self.classical_register = qiskit.ClassicalRegister(
             size=self.num_qubits,
-            name="decoded_data"
+            name="classical_register"
         )
         self.circuit = qiskit.QuantumCircuit(
             self.quantum_register, self.classical_register,
@@ -159,6 +161,17 @@ class QuanvolutionalFilter:
         for gate, qubits in self.selected_gates:
             self.circuit.append(gate, qubits)
 
+    def __load_data(self, encoded_data: np.ndarray):
+        """Load the data to the cirucit.
+
+        :param np.ndarray encoded_data: _description_
+        """
+        # Build the initialising part.
+        initialising_part = qiskit.QuantumCircuit(self.quantum_register, self.classical_register)
+        initialising_part.initialize(encoded_data)
+        # Make a new circuit by composing the initialising part and self.circuit.
+        self.circuit = initialising_part.compose(self.circuit)
+
     def draw(self):
         """Draw the circuit.
         """
@@ -166,4 +179,51 @@ class QuanvolutionalFilter:
             return self.circuit.draw(output="mpl")
         except:
             print(self.circuit.draw())
- 
+
+    def run(self, data: np.ndarray, shots: int) -> dict:
+        # Encode the data.
+        encoded_data = QuanvolutionalFilter.encode_with_threshold(data)
+        
+        # Load the data to the circuit.
+        self.__load_data(encoded_data)
+        
+        # Run the circuit.
+        simulator = qiskit_aer.AerSimulator()
+        transpiled_circuit = qiskit.transpile(self.circuit, simulator)
+        result = simulator.run(transpiled_circuit, shots=shots).result()
+        counts = result.get_counts(transpiled_circuit)
+        
+        # Decode the data.
+        decoded_data = QuanvolutionalFilter.decode_by_summing_ones(counts)
+        
+        return decoded_data
+
+    @staticmethod
+    def encode_with_threshold(data: np.ndarray, threshold: float=1) -> np.ndarray:
+        """Encode the given data according to the threshold. This method is suggested in the original paper.
+
+        :param np.ndarray data: original data
+        :param float threshold: threshold to encode
+        :return np.ndarray: encoded data
+        """
+        flatten_data = data.flatten()
+        encoded_data = np.where(flatten_data > threshold, 1, 0).astype(np.float64)
+        encoded_data /= np.linalg.norm(encoded_data)
+        
+        return encoded_data
+
+    @staticmethod
+    def decode_by_summing_ones(counts: dict) -> int:
+        """Decode the measured result to the number of ones in the result.
+
+        :param dict counts: result of running the circuit
+        :return int: the number of ones in the most likely result
+        """
+        # Sort the resuly by the frequency.
+        sorted_counts = dict(sorted(counts.items(), key = lambda item: -item[1]))
+        # Get the most likely result.
+        most_likely_result = list(sorted_counts.keys())[0]
+        # Count the number of ones.
+        num_ones = most_likely_result.count("1")
+        
+        return num_ones

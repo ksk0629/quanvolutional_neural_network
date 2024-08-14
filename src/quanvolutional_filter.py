@@ -73,6 +73,10 @@ class QuanvolutionalFilter:
         
         # Step 5: Set measurements to the lot qubits.
         self.circuit.measure(self.quantum_register, self.classical_register)
+        
+        # Transpile the circuit.
+        self.simulator = qiskit_aer.AerSimulator()
+        self.transpiled_circuit = qiskit.transpile(self.circuit, self.simulator)
 
     def __build_initial_circuit(self):
         """Build the initial ciruit.
@@ -188,10 +192,8 @@ class QuanvolutionalFilter:
         self.__load_data(encoded_data)
         
         # Run the circuit.
-        simulator = qiskit_aer.AerSimulator()
-        transpiled_circuit = qiskit.transpile(self.circuit, simulator)
-        result = simulator.run(transpiled_circuit, shots=shots).result()
-        counts = result.get_counts(transpiled_circuit)
+        result = self.simulator.run(self.transpiled_circuit, shots=shots).result()
+        counts = result.get_counts(self.transpiled_circuit)
         
         # Decode the data.
         decoded_data = QuanvolutionalFilter.decode_by_summing_ones(counts)

@@ -207,10 +207,13 @@ class QuanvolutionalFilter:
         :return np.ndarray: encoded data
         """
         flatten_data = data.flatten()
-        encoded_data = np.where(flatten_data > threshold, 1, 0).astype(np.float64)
-        encoded_data /= np.linalg.norm(encoded_data)
+        encode_flags = np.where(flatten_data >= threshold, 1, 0).astype(np.float64)
+        quantum_state = 1
+        for encode_flag in encode_flags:
+            encoded_state = np.array([1, 0]) if encode_flag == 0 else np.array([0, 1])
+            quantum_state = np.kron(quantum_state, encoded_state)
         
-        return encoded_data
+        return quantum_state
 
     @staticmethod
     def decode_by_summing_ones(counts: dict) -> int:

@@ -39,9 +39,14 @@ class QuanvolutionalLayer:
         # Perform the quanvolutional filters.
         outputs = []
         for quanvolutional_filter in tqdm(self.quanvolutional_filters, leave=False, desc="Filters"):
+            # Use comprehensive for-loop.
             output = np.array([
                 quanvolutional_filter.run(data=one_window, shots=shots)
                 for one_window in tqdm(reshaped_strided_data, leave=False, desc="Windows")
             ])
+            # Use map function.
+            # output = np.array(list(
+            #     map(quanvolutional_filter.run, reshaped_strided_data, [shots]*len(reshaped_strided_data))
+            # ))
             outputs.append(output.reshape(data.shape))
         return np.array(outputs)

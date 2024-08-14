@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm.auto import tqdm
 
 from quanvolutional_filter import QuanvolutionalFilter
 
@@ -17,7 +18,10 @@ class QuanvolutionalLayer:
         self.quanvolutional_filters = [QuanvolutionalFilter(self.kernel_size) for _ in range(self.num_filters)]
     
     def run_for_dataset(self, dataset: np.ndarray, shots: int) -> np.ndarray:
-        all_outputs = [self.run_single_channel(data=data, shots=shots) for data in dataset]
+        all_outputs = [
+            self.run_single_channel(data=data, shots=shots)
+            for data in tqdm(dataset, leave=True, desc="Dataset")
+        ]
         return np.array(all_outputs)
 
     def run_single_channel(self, data: np.ndarray, shots:int) -> np.ndarray:
@@ -34,7 +38,10 @@ class QuanvolutionalLayer:
 
         # Perform the quanvolutional filters.
         outputs = []
-        for quanvolutional_filter in self.quanvolutional_filters:
-            output = np.array([quanvolutional_filter.run(data=one_window, shots=shots) for one_window in reshaped_strided_data])
+        for quanvolutional_filter in tqdm(self.quanvolutional_filters, leave=False, desc="Filters"):
+            output = np.array([
+                quanvolutional_filter.run(data=one_window, shots=shots)
+                for one_window in tqdm(reshaped_strided_data, leave=False, desc="Windows")
+            ])
             outputs.append(output.reshape(data.shape))
         return np.array(outputs)

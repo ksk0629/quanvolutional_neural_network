@@ -73,6 +73,10 @@ class QuanvolutionalFilter:
         
         # Step 5: Set measurements to the lot qubits.
         self.circuit.measure(self.quantum_register, self.classical_register)
+        
+        # Transpile the circuit.
+        self.simulator = qiskit_aer.AerSimulator()
+        self.transpiled_circuit = qiskit.transpile(self.circuit, self.simulator)
 
     def __build_initial_circuit(self):
         """Build the initial ciruit.
@@ -188,10 +192,8 @@ class QuanvolutionalFilter:
         self.__load_data(encoded_data)
         
         # Run the circuit.
-        simulator = qiskit_aer.AerSimulator()
-        transpiled_circuit = qiskit.transpile(self.circuit, simulator)
-        result = simulator.run(transpiled_circuit, shots=shots).result()
-        counts = result.get_counts(transpiled_circuit)
+        result = self.simulator.run(self.transpiled_circuit, shots=shots).result()
+        counts = result.get_counts(self.transpiled_circuit)
         
         # Decode the data.
         decoded_data = QuanvolutionalFilter.decode_by_summing_ones(counts)
@@ -207,10 +209,13 @@ class QuanvolutionalFilter:
         :return np.ndarray: encoded data
         """
         flatten_data = data.flatten()
-        encoded_data = np.where(flatten_data > threshold, 1, 0).astype(np.float64)
-        encoded_data /= np.linalg.norm(encoded_data)
+        encode_flags = np.where(flatten_data >= threshold, 1, 0).astype(np.float64)
+        quantum_state = 1
+        for encode_flag in encode_flags:
+            encoded_state = np.array([1, 0]) if encode_flag == 0 else np.array([0, 1])
+            quantum_state = np.kron(quantum_state, encoded_state)
         
-        return encoded_data
+        return quantum_state
 
     @staticmethod
     def decode_by_summing_ones(counts: dict) -> int:

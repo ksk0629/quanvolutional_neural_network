@@ -50,3 +50,7 @@ class QuanvolutionalLayer:
             # ))
             outputs.append(output.reshape(data.shape))
         return np.array(outputs)
+
+    def run_for_dataset_and_save(self, dataset: np.ndarray, shots: int, filename: str):
+        outputs = self.run_for_dataset(dataset=dataset, shots=shots)
+        np.save(filename, outputs)

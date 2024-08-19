@@ -37,19 +37,14 @@ class QuanvolutionalLayer:
         reshaped_strided_data = strided_data.reshape((-1, self.kernel_size[0] * self.kernel_size[1]))
 
         # Perform the quanvolutional filters.
-        outputs = []
-        for quanvolutional_filter in tqdm(self.quanvolutional_filters, leave=False, desc="Filters"):
+        outputs = np.empty([len(self.quanvolutional_filters), *data.shape])
+        for index, quanvolutional_filter in enumerate(tqdm(self.quanvolutional_filters, leave=False, desc="Filters")):
             # Use comprehensive for-loop.
-            output = np.array([
+            outputs[index, :, :] = np.array([
                 quanvolutional_filter.run(data=one_window, shots=shots)
                 for one_window in tqdm(reshaped_strided_data, leave=False, desc="Windows")
-            ])
-            # Use map function.
-            # output = np.array(list(
-            #     map(quanvolutional_filter.run, reshaped_strided_data, [shots]*len(reshaped_strided_data))
-            # ))
-            outputs.append(output.reshape(data.shape))
-        return np.array(outputs)
+            ]).reshape(data.shape)
+        return outputs
 
     def run_for_dataset_and_save(self, dataset: np.ndarray, shots: int, filename: str):
         outputs = self.run_for_dataset(dataset=dataset, shots=shots)

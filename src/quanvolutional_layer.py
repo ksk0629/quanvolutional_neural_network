@@ -39,11 +39,9 @@ class QuanvolutionalLayer:
         # Perform the quanvolutional filters.
         outputs = np.empty([len(self.quanvolutional_filters), *data.shape])
         for index, quanvolutional_filter in enumerate(tqdm(self.quanvolutional_filters, leave=False, desc="Filters")):
-            # Use comprehensive for-loop.
-            outputs[index, :, :] = np.array([
-                quanvolutional_filter.run(data=one_window, shots=shots)
-                for one_window in tqdm(reshaped_strided_data, leave=False, desc="Windows")
-            ]).reshape(data.shape)
+            vectorized_quanvolutional_filter_run = np.vectorize(quanvolutional_filter.run,
+                                                                signature="(n),()->()")            
+            outputs[index, :, :] = vectorized_quanvolutional_filter_run(reshaped_strided_data, shots).reshape(data.shape)
         return outputs
 
     def run_for_dataset_and_save(self, dataset: np.ndarray, shots: int, filename: str):

@@ -13,6 +13,12 @@ class QuanvolutionalLayer:
         num_filters: int,
         padding_mode: str | None = "constant",
     ):
+        """Initialise the instance.
+
+        :param tuple[int, int] kernel_size: kernel size
+        :param int num_filters: number of filters
+        :param str | None padding_mode: padding mode (see numpy.pad), defaults to "constant"
+        """
         # Store the arguments to class variables.
         self.kernel_size = kernel_size
         self.num_filters = num_filters
@@ -24,6 +30,12 @@ class QuanvolutionalLayer:
         ]
 
     def run_for_dataset(self, dataset: np.ndarray, shots: int) -> np.ndarray:
+        """Run the circuit with the given dataset.
+
+        :param np.ndarray dataset: dataset
+        :param int shots: number of shots
+        :return np.ndarray: processed dataset
+        """
         all_outputs = [
             self.run_single_channel(data=data, shots=shots)
             for data in tqdm(dataset, leave=True, desc="Dataset")
@@ -31,6 +43,12 @@ class QuanvolutionalLayer:
         return np.array(all_outputs)
 
     def run_single_channel(self, data: np.ndarray, shots: int) -> np.ndarray:
+        """Run the circuit with a single channel image.
+
+        :param np.ndarray data: single channel image data
+        :param int shots: number of shots
+        :return np.ndarray: processed single channel image data
+        """
         # Perform padding to make the output shape as same as the input  accodring to the mode.
         padded_data = np.pad(
             data,
@@ -67,5 +85,11 @@ class QuanvolutionalLayer:
         return outputs
 
     def run_for_dataset_and_save(self, dataset: np.ndarray, shots: int, filename: str):
+        """Run the circuit with the given dataset and save the result.
+
+        :param np.ndarray dataset: dataset
+        :param int shots: number of shots
+        :param str filename: output path
+        """
         outputs = self.run_for_dataset(dataset=dataset, shots=shots)
         np.save(filename, outputs)

@@ -1,6 +1,5 @@
 import math
 
-from numpy.typing import ArrayLike
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -90,7 +89,7 @@ class ClassicalConvolutionalNeuralNetwork(nn.Module):
         )
         return (output_height, output_width)
 
-    def forward(self, x: ArrayLike) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         # The first convolutional and pooling layers result.
         x = self.conv1(x)
         x = self.relu(x)
@@ -111,6 +110,6 @@ class ClassicalConvolutionalNeuralNetwork(nn.Module):
 
         return self.softmax(x, dim=1)
 
-    def classify(self, x: ArrayLike) -> torch.Tensor:
+    def classify(self, x: torch.Tensor) -> torch.Tensor:
         probabilities = self.forward(x)
         return torch.argmax(probabilities, dim=1)

@@ -159,10 +159,11 @@ class QuanvFilter:
         for gate, qubits in self.selected_gates:
             self.circuit.append(gate, qubits)
 
-    def __load_data(self, encoded_data: np.ndarray):
+    def load_data(self, encoded_data: np.ndarray) -> qiskit.QuantumCircuit:
         """Load the encoded data to the cirucit.
 
         :param np.ndarray encoded_data: encoded data
+        :return qiskit.QuantumCircuit: circuit having data encoded part
         """
         # Build the initialising part.
         initialising_part = qiskit.QuantumCircuit(
@@ -170,7 +171,8 @@ class QuanvFilter:
         )
         initialising_part.initialize(encoded_data)
         # Make a new circuit by composing the initialising part and self.circuit.
-        self.circuit = initialising_part.compose(self.circuit)
+        ready_circuit = initialising_part.compose(self.circuit)
+        return ready_circuit
 
     def draw(self):
         """Draw the circuit."""
@@ -190,10 +192,10 @@ class QuanvFilter:
         encoded_data = utils_qnn.encode_with_threshold(data)
 
         # Load the data to the circuit.
-        self.__load_data(encoded_data)
+        ready_circuit = self.load_data(encoded_data)
 
         # Run the circuit.
-        transpiled_circuit = qiskit.transpile(self.circuit, self.simulator)
+        transpiled_circuit = qiskit.transpile(ready_circuit, self.simulator)
         result = self.simulator.run(transpiled_circuit, shots=shots).result()
         counts = result.get_counts(transpiled_circuit)
 

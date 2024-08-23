@@ -8,7 +8,7 @@ from sqrt_swap_gate import SqrtSwapGate
 import utils_qnn
 
 
-class QuanvolutionalFilter:
+class QuanvFilter:
     """Quanvolutional filter class."""
 
     def __init__(self, kernel_size: tuple[int, int]):

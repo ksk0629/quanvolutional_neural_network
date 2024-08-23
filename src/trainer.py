@@ -65,7 +65,9 @@ class Trainer:
 
         return loss.item()
 
-    def calc_loss(self, data: torch.Tensor, label: torch.Tensor) -> nn._Loss:
+    def calc_loss(
+        self, data: torch.Tensor, label: torch.Tensor
+    ) -> torch.nn.modules.loss._Loss:
         """Calculate the loss.
 
         :param torch.Tensor data: data for calculating loss

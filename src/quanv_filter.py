@@ -5,15 +5,16 @@ import qiskit
 import qiskit_aer
 
 from sqrt_swap_gate import SqrtSwapGate
+import utils_qnn
 
 
-class QuanvolutionalFilter:
+class QuanvFilter:
     """Quanvolutional filter class."""
 
     def __init__(self, kernel_size: tuple[int, int]):
         """Prepare the circuit.
 
-        :param tuple[int, int] kernel_size: the kernel size.
+        :param tuple[int, int] kernel_size: kernel size.
         """
         # Get the number of qubits.
         self.num_qubits: int = kernel_size[0] * kernel_size[1]
@@ -159,9 +160,9 @@ class QuanvolutionalFilter:
             self.circuit.append(gate, qubits)
 
     def __load_data(self, encoded_data: np.ndarray):
-        """Load the data to the cirucit.
+        """Load the encoded data to the cirucit.
 
-        :param np.ndarray encoded_data: _description_
+        :param np.ndarray encoded_data: encoded data
         """
         # Build the initialising part.
         initialising_part = qiskit.QuantumCircuit(
@@ -178,9 +179,15 @@ class QuanvolutionalFilter:
         except:
             print(self.circuit.draw())
 
-    def run(self, data: np.ndarray, shots: int) -> dict:
+    def run(self, data: np.ndarray, shots: int) -> int:
+        """Run this filter.
+
+        :param np.ndarray data: input data, which is not encoded
+        :param int shots: number of shots
+        :return int: decoded result data
+        """
         # Encode the data.
-        encoded_data = QuanvolutionalFilter.encode_with_threshold(data)
+        encoded_data = utils_qnn.encode_with_threshold(data)
 
         # Load the data to the circuit.
         self.__load_data(encoded_data)
@@ -190,40 +197,7 @@ class QuanvolutionalFilter:
         result = self.simulator.run(transpiled_circuit, shots=shots).result()
         counts = result.get_counts(transpiled_circuit)
 
-        # Decode the data.
-        decoded_data = QuanvolutionalFilter.decode_by_summing_ones(counts)
+        # Decode the result data.
+        decoded_data = utils_qnn.decode_by_summing_ones(counts)
 
         return decoded_data
-
-    @staticmethod
-    def encode_with_threshold(data: np.ndarray, threshold: float = 1) -> np.ndarray:
-        """Encode the given data according to the threshold. This method is suggested in the original paper.
-
-        :param np.ndarray data: original data
-        :param float threshold: threshold to encode
-        :return np.ndarray: encoded data
-        """
-        flatten_data = data.flatten()
-        encode_flags = np.where(flatten_data >= threshold, 1, 0).astype(np.float64)
-        quantum_state = 1
-        for encode_flag in encode_flags:
-            encoded_state = np.array([1, 0]) if encode_flag == 0 else np.array([0, 1])
-            quantum_state = np.kron(quantum_state, encoded_state)
-
-        return quantum_state
-
-    @staticmethod
-    def decode_by_summing_ones(counts: dict) -> int:
-        """Decode the measured result to the number of ones in the result.
-
-        :param dict counts: result of running the circuit
-        :return int: the number of ones in the most likely result
-        """
-        # Sort the resuly by the frequency.
-        sorted_counts = dict(sorted(counts.items(), key=lambda item: -item[1]))
-        # Get the most likely result.
-        most_likely_result = list(sorted_counts.keys())[0]
-        # Count the number of ones.
-        num_ones = most_likely_result.count("1")
-
-        return num_ones

@@ -3,10 +3,10 @@ import torch
 import torch.nn.functional as F
 from tqdm.auto import tqdm
 
-from quanvolutional_filter import QuanvolutionalFilter
+from quanv_filter import QuanvFilter
 
 
-class QuanvolutionalLayer:
+class QuanvLayer:
     """Quanvolutional layer class."""
 
     def __init__(
@@ -27,11 +27,11 @@ class QuanvolutionalLayer:
         self.padding_mode = padding_mode
 
         # Define constants.
-        self.__dataset_dimension = 4
+        self.__batch_data_dim = 4
 
         # Get the quanvolutional filters.
-        self.quanvolutional_filters = [
-            QuanvolutionalFilter(self.kernel_size) for _ in range(self.num_filters)
+        self.quanv_filters = [
+            QuanvFilter(self.kernel_size) for _ in range(self.num_filters)
         ]
 
     def run_for_batch(self, batch_data: torch.Tensor, shots: int) -> torch.Tensor:
@@ -42,19 +42,21 @@ class QuanvolutionalLayer:
         :return torch.Tensor: processed batch_data whose shape must be [batch size, channel, height, width]
         """
         # Check the dataset shape.
-        if batch_data.ndim != self.__dataset_dimension:
+        if batch_data.ndim != self.__batch_data_dim:
             msg = f"""
-                The dimension of the dataset must be {self.__dataset_dimension},
+                The dimension of the batch_data must be {self.__batch_data_dim},
                 which is [batch size, channel, height, width].
             """
             raise ValueError(msg)
 
+        # Process all data.
         all_outputs = torch.stack(
             [
                 self.run_single_channel(data=data, shots=shots)
                 for data in tqdm(batch_data, leave=True, desc="Dataset")
             ]
         )
+
         return all_outputs
 
     def run_single_channel(self, data: torch.Tensor, shots: int) -> torch.Tensor:
@@ -68,7 +70,7 @@ class QuanvolutionalLayer:
         # This is a valid operation as this method assumes that the data is a single channel data.
         data = data[0]
 
-        # Perform padding to make the output shape as same as the input  accodring to the mode.
+        # Perform padding accodring to the mode to make the output shape as same as the input.
         padding_size_left = self.kernel_size[1] // 2
         padding_size_right = self.kernel_size[1] // 2
         padding_size_top = self.kernel_size[0] // 2
@@ -85,7 +87,7 @@ class QuanvolutionalLayer:
             mode=self.padding_mode,
         )
 
-        # Make the strided data.
+        # Make the sliding window data.
         new_shape = (
             padded_data.size(0) - self.kernel_size[0] + 1,
             padded_data.size(1) - self.kernel_size[1] + 1,
@@ -96,28 +98,34 @@ class QuanvolutionalLayer:
             padded_data.stride(0),
             padded_data.stride(1),
         )
-        strided_data = torch.as_strided(padded_data, size=new_shape, stride=new_stride)
+        sliding_window_data = torch.as_strided(
+            padded_data, size=new_shape, stride=new_stride
+        )
 
-        # Reshape the strided data to feed to the quanvolutional filters.
-        reshaped_strided_data = torch.reshape(
-            strided_data, (-1, self.kernel_size[0] * self.kernel_size[1])
+        # Reshape the sliding window data to feed to the quanvolutional filters.
+        reshaped_sliding_window_data = torch.reshape(
+            sliding_window_data, (-1, self.kernel_size[0] * self.kernel_size[1])
         )
 
         # >>> Numpy computing zone >>>
-        reshaped_strided_data_np = reshaped_strided_data.detach().cpu().numpy()
-        # Perform the quanvolutional filters.
-        outputs = np.empty([len(self.quanvolutional_filters), *data.shape])
+        # Conver the sliding window data from torch.Tensor to numpy.
+        reshaped_strided_data_np = reshaped_sliding_window_data.detach().cpu().numpy()
+        # Make the initial outputs data as numpy.ndarray.
+        outputs = np.empty([len(self.quanv_filters), *data.shape])
         for index, quanvolutional_filter in enumerate(
-            tqdm(self.quanvolutional_filters, leave=False, desc="Filters")
+            tqdm(self.quanv_filters, leave=False, desc="Filters")
         ):
+            # Vectorise quanvolutional_filter.run function to make it quick.
             vectorized_quanvolutional_filter_run = np.vectorize(
                 quanvolutional_filter.run, signature="(n),()->()"
             )
+            # Perform each quanvolutional filter.
             outputs[index, :, :] = vectorized_quanvolutional_filter_run(
                 reshaped_strided_data_np, shots
             ).reshape(data.shape)
-        # <<< Numpy computing zone <<<
         outputs = torch.Tensor(outputs)
+        # <<< Numpy computing zone <<<
+
         return outputs
 
     def run_for_batch_and_save(
@@ -129,5 +137,5 @@ class QuanvolutionalLayer:
         :param int shots: number of shots
         :param str filename: output path
         """
-        outputs = self.run_for_batch(dataset=batch_data, shots=shots)
+        outputs = self.run_for_batch(batch_data=batch_data, shots=shots)
         torch.save(outputs, filename)

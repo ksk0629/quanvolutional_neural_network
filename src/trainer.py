@@ -17,6 +17,7 @@ class Trainer:
         epochs: int,
         save_steps: int,
         output_dir: str | None,
+        model_name: str | None,
     ):
         """Initialise this trainer.
 
@@ -26,6 +27,7 @@ class Trainer:
         :param int epochs: number of epochs
         :param int save_steps: number of steps to save
         :param str | None output_dir: path to output directory
+        :param str model_name: model_name
         """
         self.model = model
         self.train_loader = train_loader
@@ -33,6 +35,7 @@ class Trainer:
         self.epochs = epochs
         self.save_steps = save_steps
         self.output_dir = output_dir
+        self.model_name = model_name if model_name is not None else "model"
         self.current_epoch = 0
 
         self.criterion = nn.NLLLoss()
@@ -103,7 +106,7 @@ class Trainer:
 
                 # Save the parameters according to self.save_steps.
                 if self.current_epoch % self.save_steps == 0:
-                    filename = f"model_{self.current_epoch}"
+                    filename = f"{self.model_name}_{self.current_epoch}"
                     output_path = os.path.join(self.output_dir, filename)
                     torch.save(self.model.state_dict(), output_path)
 
@@ -143,6 +146,6 @@ class Trainer:
             self.current_epoch = current_epoch
             self.train_and_test_one_epoch()
 
-        filename = f"model_final_{self.epochs}"
+        filename = f"{self.model_name}_final_{self.epochs}"
         output_path = os.path.join(self.output_dir, filename)
         torch.save(self.model.state_dict(), output_path)

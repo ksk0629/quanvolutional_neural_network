@@ -20,6 +20,7 @@ class QuanvNNTrainer:
         save_steps: int,
         shots: int,
         model_output_dir: str,
+        model_name: str,
         processed_data_filename: str | None,
         processed_data_output_dir: str | None = "./../data",
     ):
@@ -33,6 +34,7 @@ class QuanvNNTrainer:
         :param int save_steps: number of steps to save
         :param int shots: number of shots
         :param str model_output_dir: path to model output directory
+        :param str model_name: model_name
         :param str | None processed_data_filename: processed data filename to output
         :param str | None processed_data_output_dir: path to processed data output directory, defaults to "./../data"
         """
@@ -44,6 +46,7 @@ class QuanvNNTrainer:
         self.save_steps = save_steps
         self.shots = shots
         self.model_output_dir = model_output_dir
+        self.model_name = model_name
         self.processed_data_filename = processed_data_filename
         self.processed_data_output_dir = processed_data_output_dir
 
@@ -117,6 +120,7 @@ class QuanvNNTrainer:
             epochs=self.epochs,
             save_steps=self.save_steps,
             output_dir=self.model_output_dir,
+            model_name=self.model_name,
         )
 
         # 3: Train the classical part of self.qnn.

@@ -1,6 +1,4 @@
 import numpy as np
-import qiskit
-import qiskit_aer
 import torch
 import torch.nn.functional as F
 from tqdm.auto import tqdm
@@ -35,11 +33,6 @@ class QuanvolutionalLayer:
         self.quanvolutional_filters = [
             QuanvolutionalFilter(self.kernel_size) for _ in range(self.num_filters)
         ]
-
-        self.backend = qiskit_aer.AerSimulator()
-        self.backend.set_options(
-            max_parallel_threads=0, max_parallel_experiments=0, max_parallel_shots=0
-        )
 
     def run_for_batch(self, batch_data: torch.Tensor, shots: int) -> torch.Tensor:
         """Run the circuit with the given dataset.
@@ -110,44 +103,20 @@ class QuanvolutionalLayer:
             strided_data, (-1, self.kernel_size[0] * self.kernel_size[1])
         )
 
-        # Prepare the output data.
+        # >>> Numpy computing zone >>>
+        reshaped_strided_data_np = reshaped_strided_data.detach().cpu().numpy()
+        # Perform the quanvolutional filters.
         outputs = np.empty([len(self.quanvolutional_filters), *data.shape])
-
-        # Convert the strided data into list.
-        reshaped_strided_data_list = reshaped_strided_data.detach().cpu().tolist()
-
-        # Perform the filters to each window data.
-        for index, window_data in enumerate(
-            tqdm(reshaped_strided_data_list, leave=False, desc="window")
+        for index, quanvolutional_filter in enumerate(
+            tqdm(self.quanvolutional_filters, leave=False, desc="Filters")
         ):
-
-            # Load encoded data to each circuit.
-            for quanvolutional_filter in self.quanvolutional_filters:
-                encoded_data = QuanvolutionalLayer.encode_with_threshold(
-                    np.array(window_data)
-                )
-                quanvolutional_filter.load_data(encoded_data)
-
-            # Run the circuits parallely.
-            circuits = [
-                quanvolutional_filter.circuit
-                for quanvolutional_filter in self.quanvolutional_filters
-            ]
-            transpiled_circuits = qiskit.transpile(circuits, backend=self.backend)
-            results = self.backend.run(transpiled_circuits).result()
-            counts = results.get_counts()
-
-            # Decode the results.
-            decoded_datum = [
-                QuanvolutionalLayer.decode_by_summing_ones(count) for count in counts
-            ]
-
-            # Store the decoded data to the output data.
-            row_index = index // data.shape[1]
-            column_index = index % data.shape[1]
-            for filter_index, decoded_data in enumerate(decoded_datum):
-                outputs[filter_index, row_index, column_index] = decoded_data
-
+            vectorized_quanvolutional_filter_run = np.vectorize(
+                quanvolutional_filter.run, signature="(n),()->()"
+            )
+            outputs[index, :, :] = vectorized_quanvolutional_filter_run(
+                reshaped_strided_data_np, shots
+            ).reshape(data.shape)
+        # <<< Numpy computing zone <<<
         outputs = torch.Tensor(outputs)
         return outputs
 
@@ -162,36 +131,3 @@ class QuanvolutionalLayer:
         """
         outputs = self.run_for_batch(dataset=batch_data, shots=shots)
         torch.save(outputs, filename)
-
-    @staticmethod
-    def encode_with_threshold(data: np.ndarray, threshold: float = 1) -> np.ndarray:
-        """Encode the given data according to the threshold. This method is suggested in the original paper.
-
-        :param np.ndarray data: original data
-        :param float threshold: threshold to encode
-        :return np.ndarray: encoded data
-        """
-        flatten_data = data.flatten()
-        encode_flags = np.where(flatten_data >= threshold, 1, 0).astype(np.float64)
-        quantum_state = 1
-        for encode_flag in encode_flags:
-            encoded_state = np.array([1, 0]) if encode_flag == 0 else np.array([0, 1])
-            quantum_state = np.kron(quantum_state, encoded_state)
-
-        return quantum_state
-
-    @staticmethod
-    def decode_by_summing_ones(counts: dict) -> int:
-        """Decode the measured result to the number of ones in the result.
-
-        :param dict counts: result of running the circuit
-        :return int: the number of ones in the most likely result
-        """
-        # Sort the resuly by the frequency.
-        sorted_counts = dict(sorted(counts.items(), key=lambda item: -item[1]))
-        # Get the most likely result.
-        most_likely_result = list(sorted_counts.keys())[0]
-        # Count the number of ones.
-        num_ones = most_likely_result.count("1")
-
-        return num_ones

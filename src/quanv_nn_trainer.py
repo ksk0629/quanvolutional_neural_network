@@ -1,3 +1,5 @@
+import os
+
 import torch
 
 from plain_dataset import PlainDataset
@@ -18,6 +20,8 @@ class QuanvNNTrainer:
         save_steps: int,
         shots: int,
         model_output_dir: str,
+        processed_data_filename: str | None,
+        processed_data_output_dir: str | None = "./../data",
     ):
         """Initialise this trainer.
 
@@ -29,6 +33,8 @@ class QuanvNNTrainer:
         :param int save_steps: number of steps to save
         :param int shots: number of shots
         :param str model_output_dir: path to model output directory
+        :param str | None processed_data_filename: processed data filename to output
+        :param str | None processed_data_output_dir: path to processed data output directory, defaults to "./../data"
         """
         self.qnn = qnn
         self.train_dataset = train_dataset
@@ -38,6 +44,14 @@ class QuanvNNTrainer:
         self.save_steps = save_steps
         self.shots = shots
         self.model_output_dir = model_output_dir
+        self.processed_data_filename = processed_data_filename
+        self.processed_data_output_dir = processed_data_output_dir
+
+        # Create the output directory if it is given and does not exist.
+        is_processed_data_output_dir_given = self.processed_data_output_dir is not None
+        if is_processed_data_output_dir_given:
+            if not os.path.exists(self.processed_data_output_dir):
+                os.makedirs(self.processed_data_output_dir)
 
     def preprocess(self, dataset: torch.utils.data.Dataset) -> torch.utils.data.Dataset:
         """Preprocess a given dataset using the QuanvLayer.
@@ -55,13 +69,37 @@ class QuanvNNTrainer:
 
     def set_preprocessed_dataloaders(self):
         """Set preprocessed training and test data loaders."""
+        # Check if preprocessed data should be saved or not.
+        is_processed_data_output_dir_given = self.processed_data_output_dir is not None
+        is_processed_data_filename_given = self.processed_data_output_dir is not None
+        processed_data_save_flag = (
+            is_processed_data_filename_given and is_processed_data_output_dir_given
+        )
+
+        # Processed the train data using QuanvLayer and set it as train_loader.
+        train_dataset = self.preprocess(self.train_dataset)
+        if processed_data_save_flag:
+            # Save the data.
+            train_output_path = os.path.join(
+                self.processed_data_output_dir, "train_", self.processed_data_filename
+            )
+            torch.save(train_dataset, train_output_path)
         self.train_loader = torch.utils.data.DataLoader(
-            dataset=self.preprocess(self.train_dataset),
+            dataset=train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
         )
+
+        # Processed the test data using QuanvLayer and set it as test_loader.
+        test_dataset = self.preprocess(self.test_dataset)
+        if processed_data_save_flag:
+            # Save the data.
+            test_output_path = os.path.join(
+                self.processed_data_output_dir, "test_", self.processed_data_filename
+            )
+            torch.save(test_dataset, test_output_path)
         self.test_loader = torch.utils.data.DataLoader(
-            dataset=self.preprocess(self.test_dataset),
+            dataset=test_dataset,
             batch_size=self.batch_size,
             shuffle=True,
         )

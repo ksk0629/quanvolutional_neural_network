@@ -81,7 +81,7 @@ class QuanvNNTrainer:
         if processed_data_save_flag:
             # Save the data.
             train_output_path = os.path.join(
-                self.processed_data_output_dir, "train_", self.processed_data_filename
+                self.processed_data_output_dir, "train_" + self.processed_data_filename
             )
             torch.save(train_dataset, train_output_path)
         self.train_loader = torch.utils.data.DataLoader(
@@ -95,7 +95,7 @@ class QuanvNNTrainer:
         if processed_data_save_flag:
             # Save the data.
             test_output_path = os.path.join(
-                self.processed_data_output_dir, "test_", self.processed_data_filename
+                self.processed_data_output_dir, "test_" + self.processed_data_filename
             )
             torch.save(test_dataset, test_output_path)
         self.test_loader = torch.utils.data.DataLoader(

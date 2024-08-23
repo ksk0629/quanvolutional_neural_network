@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -14,6 +16,8 @@ class Trainer:
         test_loader: torch.utils.data.DataLoader,
         epochs: int,
         save_steps: int,
+        output_dir: str | None,
+        model_name: str | None,
     ):
         """Initialise this trainer.
 
@@ -22,12 +26,16 @@ class Trainer:
         :param torch.utils.data.DataLoader test_loader: test data loader
         :param int epochs: number of epochs
         :param int save_steps: number of steps to save
+        :param str | None output_dir: path to output directory
+        :param str model_name: model_name
         """
         self.model = model
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.epochs = epochs
         self.save_steps = save_steps
+        self.output_dir = output_dir
+        self.model_name = model_name if model_name is not None else "model"
         self.current_epoch = 0
 
         self.criterion = nn.NLLLoss()
@@ -37,6 +45,10 @@ class Trainer:
         self.test_loss_history = []
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        # Create the output directory if not exsiting.
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
 
     def update(self, data: torch.Tensor, label: torch.Tensor) -> float:
         """Update the parameters of the model.
@@ -56,7 +68,9 @@ class Trainer:
 
         return loss.item()
 
-    def calc_loss(self, data: torch.Tensor, label: torch.Tensor) -> nn._Loss:
+    def calc_loss(
+        self, data: torch.Tensor, label: torch.Tensor
+    ) -> torch.nn.modules.loss._Loss:
         """Calculate the loss.
 
         :param torch.Tensor data: data for calculating loss
@@ -92,7 +106,8 @@ class Trainer:
 
                 # Save the parameters according to self.save_steps.
                 if self.current_epoch % self.save_steps == 0:
-                    output_path = f"model_{self.current_epoch}"
+                    filename = f"{self.model_name}_{self.current_epoch}"
+                    output_path = os.path.join(self.output_dir, filename)
                     torch.save(self.model.state_dict(), output_path)
 
         # Store the loss value.
@@ -130,3 +145,7 @@ class Trainer:
         for current_epoch in tqdm(range(1, self.epochs + 1)):
             self.current_epoch = current_epoch
             self.train_and_test_one_epoch()
+
+        filename = f"{self.model_name}_final_{self.epochs}"
+        output_path = os.path.join(self.output_dir, filename)
+        torch.save(self.model.state_dict(), output_path)

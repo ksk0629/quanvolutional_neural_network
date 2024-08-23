@@ -6,7 +6,7 @@ def encode_with_threshold(data: np.ndarray, threshold: float = 1) -> np.ndarray:
 
     :param np.ndarray data: original data
     :param float threshold: threshold to encode
-    :return np.ndarray: encoded data
+    :return np.ndarray: encoded data, which is quantum state
     """
     flatten_data = data.flatten()
     encode_flags = np.where(flatten_data >= threshold, 1, 0).astype(np.float64)
@@ -19,9 +19,9 @@ def encode_with_threshold(data: np.ndarray, threshold: float = 1) -> np.ndarray:
 
 
 def decode_by_summing_ones(counts: dict) -> int:
-    """Decode the measured result to the number of ones in the result.
+    """Decode the measured result of qiskit.QuantumCircuit to the number of ones in the result.
 
-    :param dict counts: result of running the circuit
+    :param dict counts: result of running qiskit.QuantumCircuit
     :return int: the number of ones in the most likely result
     """
     # Sort the resuly by the frequency.

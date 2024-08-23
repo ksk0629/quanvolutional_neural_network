@@ -13,7 +13,7 @@ class QuanvolutionalFilter:
     def __init__(self, kernel_size: tuple[int, int]):
         """Prepare the circuit.
 
-        :param tuple[int, int] kernel_size: the kernel size.
+        :param tuple[int, int] kernel_size: kernel size.
         """
         # Get the number of qubits.
         self.num_qubits: int = kernel_size[0] * kernel_size[1]
@@ -159,9 +159,9 @@ class QuanvolutionalFilter:
             self.circuit.append(gate, qubits)
 
     def __load_data(self, encoded_data: np.ndarray):
-        """Load the data to the cirucit.
+        """Load the encoded data to the cirucit.
 
-        :param np.ndarray encoded_data: _description_
+        :param np.ndarray encoded_data: encoded data
         """
         # Build the initialising part.
         initialising_part = qiskit.QuantumCircuit(
@@ -178,7 +178,13 @@ class QuanvolutionalFilter:
         except:
             print(self.circuit.draw())
 
-    def run(self, data: np.ndarray, shots: int) -> dict:
+    def run(self, data: np.ndarray, shots: int) -> int:
+        """Run this filter.
+
+        :param np.ndarray data: input data, which is not encoded
+        :param int shots: number of shots
+        :return int: decoded result data
+        """
         # Encode the data.
         encoded_data = QuanvolutionalFilter.encode_with_threshold(data)
 
@@ -190,7 +196,7 @@ class QuanvolutionalFilter:
         result = self.simulator.run(transpiled_circuit, shots=shots).result()
         counts = result.get_counts(transpiled_circuit)
 
-        # Decode the data.
+        # Decode the result data.
         decoded_data = QuanvolutionalFilter.decode_by_summing_ones(counts)
 
         return decoded_data

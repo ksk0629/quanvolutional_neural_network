@@ -17,7 +17,7 @@ class QuanvNNTrainer:
         batch_size: int,
         save_steps: int,
         shots: int,
-        output_dir: str | None,
+        model_output_dir: str,
     ):
         """Initialise this trainer.
 
@@ -28,7 +28,7 @@ class QuanvNNTrainer:
         :param int batch_size: batch size
         :param int save_steps: number of steps to save
         :param int shots: number of shots
-        :param str | None output_dir: path to output directory
+        :param str model_output_dir: path to model output directory
         """
         self.qnn = qnn
         self.train_dataset = train_dataset
@@ -37,7 +37,7 @@ class QuanvNNTrainer:
         self.batch_size = batch_size
         self.save_steps = save_steps
         self.shots = shots
-        self.output_dir = output_dir
+        self.model_output_dir = model_output_dir
 
     def preprocess(self, dataset: torch.utils.data.Dataset) -> torch.utils.data.Dataset:
         """Preprocess a given dataset using the QuanvLayer.
@@ -78,7 +78,7 @@ class QuanvNNTrainer:
             test_loader=self.test_loader,
             epochs=self.epochs,
             save_steps=self.save_steps,
-            output_dir=self.output_dir,
+            output_dir=self.model_output_dir,
         )
 
         # 3: Train the classical part of self.qnn.

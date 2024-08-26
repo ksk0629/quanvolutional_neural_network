@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # Train QNN.
     print("=== Train QNN ===")
     epochs = 100
-    batch_size = 2
+    batch_size = 4
     save_steps = 25
     shots = 20480 * 2
     model_output_dir = "./models"
@@ -80,3 +80,7 @@ if __name__ == "__main__":
     print("=== Train QNN ===")
 
     qnn_trainer.train_and_test()
+
+    output_dir = "./models/20240824_proto_train_qnn"
+    filename_prefix = "proto_train_qnn"
+    qnn.save(output_dir=output_dir, filename_prefix=filename_prefix)

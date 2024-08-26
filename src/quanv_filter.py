@@ -1,3 +1,6 @@
+import json
+import os
+
 import random
 
 import numpy as np
@@ -16,6 +19,8 @@ class QuanvFilter:
 
         :param tuple[int, int] kernel_size: kernel size.
         """
+        self.kernel_size = kernel_size
+
         # Get the number of qubits.
         self.num_qubits: int = kernel_size[0] * kernel_size[1]
 
@@ -203,3 +208,27 @@ class QuanvFilter:
         decoded_data = utils_qnn.decode_by_summing_ones(counts)
 
         return decoded_data
+
+    def save(self, output_dir: str, filename_prefix: str):
+        """Save the QuanvFilter.
+
+        :param str output_dir: path to output dir
+        :param str filename_prefix: prefix of output files
+        """
+        # Create the output directory.
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # Make and save the config.
+        config = dict()
+        config["kernel_size"] = self.kernel_size
+        config_filename = f"{filename_prefix}_quanv_filter_config.json"
+        config_path = os.path.join(output_dir, config_filename)
+        with open(config_path, "w") as config_file:
+            json.dump(config, config_file, indent=4)
+
+        # Save the circuit.
+        circuit_filename = f"{filename_prefix}_quanv_filter.qpy"
+        circuit_path = os.path.join(output_dir, circuit_filename)
+        with open(circuit_path, "wb") as file:
+            qiskit.qpy.dump(self.circuit, file)

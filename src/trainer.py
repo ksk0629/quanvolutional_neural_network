@@ -12,8 +12,9 @@ class Trainer:
     def __init__(
         self,
         model: nn.Module,
-        train_loader: torch.utils.data.DataLoader,
-        test_loader: torch.utils.data.DataLoader,
+        train_dataset: torch.utils.data.Dataset,
+        test_dataset: torch.utils.data.Dataset,
+        batch_size: int,
         epochs: int,
         save_steps: int,
         output_dir: str | None,
@@ -22,24 +23,37 @@ class Trainer:
         """Initialise this trainer.
 
         :param nn.Module model: model to train
-        :param torch.utils.data.DataLoader train_loader: train data loader
-        :param torch.utils.data.DataLoader test_loader: test data loader
+        :param torch.utils.data.Dataset train_dataset: train dataset
+        :param torch.utils.data.Dataset test_dataset: test dataset
+        :param int batch_size: batch size
         :param int epochs: number of epochs
         :param int save_steps: number of steps to save
         :param str | None output_dir: path to output directory
         :param str model_name: model_name
         """
         self.model = model
-        self.train_loader = train_loader
-        self.test_loader = test_loader
         self.epochs = epochs
         self.save_steps = save_steps
         self.output_dir = output_dir
+        self.train_dataset = train_dataset
+        self.test_dataset = test_dataset
+        self.batch_size = batch_size
         self.model_name = model_name if model_name is not None else "model"
         self.current_epoch = 0
 
         self.criterion = nn.NLLLoss()
         self.optimiser = optim.Adam(self.model.parameters())
+
+        self.train_loader = torch.utils.data.DataLoader(
+            dataset=self.train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+        )
+        self.test_loader = torch.utils.data.DataLoader(
+            dataset=self.test_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+        )
 
         self.train_loss_history = []
         self.test_loss_history = []

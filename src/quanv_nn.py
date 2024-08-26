@@ -1,3 +1,6 @@
+import json
+import os
+
 import torch
 
 from classical_cnn import ClassicalCNN
@@ -21,6 +24,12 @@ class QuanvNN:
         :param int quanv_num_filters: number of quanvolutional filters
         :param str | None quanv_padding_mode: padding mode (see the document of torch.nn.functional.pad), defaults to "constant"
         """
+        self.in_dim = in_dim
+        self.num_classes = num_classes
+        self.quanv_kernel_size = quanv_kernel_size
+        self.quanv_num_filters = quanv_num_filters
+        self.quanv_padding_mode = quanv_padding_mode
+
         self.quanv_layer = QuanvLayer(
             kernel_size=quanv_kernel_size,
             num_filters=quanv_num_filters,
@@ -48,3 +57,33 @@ class QuanvNN:
         """
         quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
         return self.classical_cnn.classify(quanvoluted_x)
+
+    def save(self, output_dir: str, filename_prefix: str):
+        """Save the QNN config.
+
+        :param str output_dir: path to output dir
+        :param str filename_prefix: prefix of output files
+        """
+        # Create the output directory.
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # Make and save the config.
+        config = dict()
+        config["in_dim"] = self.in_dim
+        config["num_classes"] = self.num_classes
+        config["quanv_kernel_size"] = self.quanv_kernel_size
+        config["quanv_num_filters"] = self.quanv_num_filters
+        config["quanv_padding_mode"] = self.quanv_padding_mode
+        config_filename = f"{filename_prefix}_quanv_nn_config.json"
+        config_path = os.path.join(output_dir, config_filename)
+        with open(config_path, "w") as config_file:
+            json.dump(config, config_file, indent=4)
+
+        # Save the classical CNN.
+        classical_cnn_filename = f"{filename_prefix}_classical_cnn_config.pth"
+        classical_cnn_path = os.path.join(output_dir, classical_cnn_filename)
+        torch.save(self.classical_cnn.state_dict(), classical_cnn_path)
+
+        # Save the QuanvLayer.
+        self.quanv_layer.save(output_dir=output_dir, filename_prefix=filename_prefix)

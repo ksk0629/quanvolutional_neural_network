@@ -16,6 +16,7 @@ matplotlib = "^3.9.1.post1"
 pylatexenc = "^2.10"
 scikit-learn = "^1.5.1"
 tqdm = "^4.66.5"
+mlflow = "^2.15.1"
 
 
 [tool.poetry.group.dev.dependencies]

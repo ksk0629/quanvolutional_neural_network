@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm.auto import tqdm
 
+from utils import fix_seed
+
 
 class Trainer:
     """Trainer class."""
@@ -17,6 +19,7 @@ class Trainer:
         batch_size: int,
         epochs: int,
         save_steps: int,
+        random_seed: int,
         output_dir: str | None,
         model_name: str | None,
     ):
@@ -28,9 +31,13 @@ class Trainer:
         :param int batch_size: batch size
         :param int epochs: number of epochs
         :param int save_steps: number of steps to save
+        :param int random_seed: random seed
         :param str | None output_dir: path to output directory
         :param str model_name: model_name
         """
+        self.random_seed = random_seed
+        fix_seed(self.random_seed)
+
         self.model = model
         self.epochs = epochs
         self.save_steps = save_steps

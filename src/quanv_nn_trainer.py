@@ -5,6 +5,7 @@ import torch
 from plain_dataset import PlainDataset
 from trainer import Trainer
 from quanv_nn import QuanvNN
+from utils import fix_seed
 
 
 class QuanvNNTrainer:
@@ -18,6 +19,7 @@ class QuanvNNTrainer:
         epochs: int,
         batch_size: int,
         save_steps: int,
+        random_seed: int,
         shots: int,
         model_output_dir: str,
         model_name: str,
@@ -32,12 +34,16 @@ class QuanvNNTrainer:
         :param int epochs: number of epochs
         :param int batch_size: batch size
         :param int save_steps: number of steps to save
+        :param int random_seed: random seed
         :param int shots: number of shots
         :param str model_output_dir: path to model output directory
         :param str model_name: model_name
         :param str | None processed_data_filename: processed data filename to output
         :param str | None processed_data_output_dir: path to processed data output directory, defaults to "./../data"
         """
+        self.random_seed = random_seed
+        fix_seed(self.random_seed)
+
         self.qnn = qnn
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset

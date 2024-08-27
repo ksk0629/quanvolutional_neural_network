@@ -1,14 +1,14 @@
 mlflow:
   experiment_name: proto
-  run_name: initial_proto
+  run_name: initial_proto_qnn
 train:
   epochs: 10
   batch_size: 2
   save_steps: 2
   random_seed: 19
   shots: 20480
-  model_output_dir: models/20240827_proto
-  model_name: model_name_proto
+  model_output_dir: models/20240827_proto_qnn
+  model_name: model_name_proto_qnn
   processed_data_filename: processed_data_filename_proto.pt
   processed_data_output_dir: data/processed_data_output_dir_proto
 model:

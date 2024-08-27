@@ -114,7 +114,9 @@ class QuanvNNTrainer:
             train_dataset=self.preprocessed_train_dataset,
             test_dataset=self.preprocessed_test_dataset,
             epochs=self.epochs,
+            batch_size=self.batch_size,
             save_steps=self.save_steps,
+            random_seed=self.random_seed,
             output_dir=self.model_output_dir,
             model_name=self.model_name,
         )

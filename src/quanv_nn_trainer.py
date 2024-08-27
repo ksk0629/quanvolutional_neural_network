@@ -1,5 +1,6 @@
 import os
 
+import mlflow
 import torch
 
 from plain_dataset import PlainDataset
@@ -93,6 +94,8 @@ class QuanvNNTrainer:
                 self.processed_data_output_dir, "train_" + self.processed_data_filename
             )
             torch.save(self.preprocessed_train_dataset, train_output_path)
+            # Save the data to mlflow as well.
+            mlflow.log_artifact(train_output_path)
 
         # Processed the test data using QuanvLayer and set it as test_loader.
         self.preprocessed_test_dataset = self.preprocess(self.test_dataset)
@@ -102,6 +105,8 @@ class QuanvNNTrainer:
                 self.processed_data_output_dir, "test_" + self.processed_data_filename
             )
             torch.save(self.preprocessed_test_dataset, test_output_path)
+            # Save the data to mlflow as well.
+            mlflow.log_artifact(test_output_path)
 
     def train_and_test(self):
         """Train and test the QuanvNN."""

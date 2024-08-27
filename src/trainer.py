@@ -175,3 +175,5 @@ class Trainer:
         filename = f"{self.model_name}_final_{self.epochs}"
         output_path = os.path.join(self.output_dir, filename)
         torch.save(self.model.state_dict(), output_path)
+
+        mlflow.pytorch.log_model(self.model, "classical_cnn")

@@ -14,15 +14,15 @@ torch = "^2.4.0"
 qiskit-aer = "^0.14.2"
 matplotlib = "^3.9.1.post1"
 pylatexenc = "^2.10"
-scikit-learn = "^1.5.1"
 tqdm = "^4.66.5"
 mlflow = "^2.15.1"
-
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"
 notebook = "^7.2.1"
 torchvision = "^0.19.0"
+pytest = "^8.3.2"
+pytest-cov = "^5.0.0"
 
 [build-system]
 requires = ["poetry-core"]

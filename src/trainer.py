@@ -1,5 +1,6 @@
 import os
 
+import mlflow
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -132,7 +133,9 @@ class Trainer:
                     torch.save(self.model.state_dict(), output_path)
 
         # Store the loss value.
-        self.train_loss_history.append(train_loss / len(self.train_loader))
+        average_train_loss = train_loss / len(self.train_loader)
+        self.train_loss_history.append(average_train_loss)
+        mlflow.log_metric(f"train_loss", average_train_loss, step=self.current_epoch)
 
     def eval(self):
         """Evaluate the model."""
@@ -154,7 +157,9 @@ class Trainer:
                     # Set the current loss value.
                     tepoch.set_postfix(loss=loss_value)
         # Store the loss value.
-        self.test_loss_history.append(test_loss / len(self.test_loader))
+        average_test_loss = test_loss / len(self.test_loader)
+        self.test_loss_history.append(average_test_loss)
+        mlflow.log_metric(f"test_loss", average_test_loss, step=self.current_epoch)
 
     def train_and_test_one_epoch(self):
         """Train and evaluate the model only once."""

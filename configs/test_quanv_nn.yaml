@@ -9,7 +9,7 @@ train:
   shots: 20480
   model_output_dir: models/20240827_proto
   model_name: model_name_proto
-  processed_data_filename: processed_data_filename_proto
+  processed_data_filename: processed_data_filename_proto.pt
   processed_data_output_dir: data/processed_data_output_dir_proto
 model:
   quanv_kernel_size: [3, 3]

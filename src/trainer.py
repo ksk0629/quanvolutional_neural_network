@@ -1,9 +1,12 @@
 import os
 
+import mlflow
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from tqdm.auto import tqdm
+
+from utils import fix_seed
 
 
 class Trainer:
@@ -12,34 +15,53 @@ class Trainer:
     def __init__(
         self,
         model: nn.Module,
-        train_loader: torch.utils.data.DataLoader,
-        test_loader: torch.utils.data.DataLoader,
+        train_dataset: torch.utils.data.Dataset,
+        test_dataset: torch.utils.data.Dataset,
+        batch_size: int,
         epochs: int,
         save_steps: int,
+        random_seed: int,
         output_dir: str | None,
         model_name: str | None,
     ):
         """Initialise this trainer.
 
         :param nn.Module model: model to train
-        :param torch.utils.data.DataLoader train_loader: train data loader
-        :param torch.utils.data.DataLoader test_loader: test data loader
+        :param torch.utils.data.Dataset train_dataset: train dataset
+        :param torch.utils.data.Dataset test_dataset: test dataset
+        :param int batch_size: batch size
         :param int epochs: number of epochs
         :param int save_steps: number of steps to save
+        :param int random_seed: random seed
         :param str | None output_dir: path to output directory
         :param str model_name: model_name
         """
+        self.random_seed = random_seed
+        fix_seed(self.random_seed)
+
         self.model = model
-        self.train_loader = train_loader
-        self.test_loader = test_loader
         self.epochs = epochs
         self.save_steps = save_steps
         self.output_dir = output_dir
+        self.train_dataset = train_dataset
+        self.test_dataset = test_dataset
+        self.batch_size = batch_size
         self.model_name = model_name if model_name is not None else "model"
         self.current_epoch = 0
 
         self.criterion = nn.NLLLoss()
         self.optimiser = optim.Adam(self.model.parameters())
+
+        self.train_loader = torch.utils.data.DataLoader(
+            dataset=self.train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+        )
+        self.test_loader = torch.utils.data.DataLoader(
+            dataset=self.test_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+        )
 
         self.train_loss_history = []
         self.test_loss_history = []
@@ -111,7 +133,9 @@ class Trainer:
                     torch.save(self.model.state_dict(), output_path)
 
         # Store the loss value.
-        self.train_loss_history.append(train_loss / len(self.train_loader))
+        average_train_loss = train_loss / len(self.train_loader)
+        self.train_loss_history.append(average_train_loss)
+        mlflow.log_metric(f"train_loss", average_train_loss, step=self.current_epoch)
 
     def eval(self):
         """Evaluate the model."""
@@ -133,7 +157,9 @@ class Trainer:
                     # Set the current loss value.
                     tepoch.set_postfix(loss=loss_value)
         # Store the loss value.
-        self.test_loss_history.append(test_loss / len(self.test_loader))
+        average_test_loss = test_loss / len(self.test_loader)
+        self.test_loss_history.append(average_test_loss)
+        mlflow.log_metric(f"test_loss", average_test_loss, step=self.current_epoch)
 
     def train_and_test_one_epoch(self):
         """Train and evaluate the model only once."""
@@ -149,3 +175,5 @@ class Trainer:
         filename = f"{self.model_name}_final_{self.epochs}"
         output_path = os.path.join(self.output_dir, filename)
         torch.save(self.model.state_dict(), output_path)
+
+        mlflow.pytorch.log_model(self.model, "classical_cnn")

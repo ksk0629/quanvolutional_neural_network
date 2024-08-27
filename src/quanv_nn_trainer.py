@@ -1,10 +1,12 @@
 import os
 
+import mlflow
 import torch
 
 from plain_dataset import PlainDataset
 from trainer import Trainer
 from quanv_nn import QuanvNN
+from utils import fix_seed
 
 
 class QuanvNNTrainer:
@@ -18,6 +20,7 @@ class QuanvNNTrainer:
         epochs: int,
         batch_size: int,
         save_steps: int,
+        random_seed: int,
         shots: int,
         model_output_dir: str,
         model_name: str,
@@ -32,12 +35,16 @@ class QuanvNNTrainer:
         :param int epochs: number of epochs
         :param int batch_size: batch size
         :param int save_steps: number of steps to save
+        :param int random_seed: random seed
         :param int shots: number of shots
         :param str model_output_dir: path to model output directory
         :param str model_name: model_name
         :param str | None processed_data_filename: processed data filename to output
         :param str | None processed_data_output_dir: path to processed data output directory, defaults to "./../data"
         """
+        self.random_seed = random_seed
+        fix_seed(self.random_seed)
+
         self.qnn = qnn
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
@@ -70,7 +77,7 @@ class QuanvNNTrainer:
         processed_dataset = PlainDataset(processed_data, labels)
         return processed_dataset
 
-    def set_preprocessed_dataloaders(self):
+    def set_preprocessed_datasets(self):
         """Set preprocessed training and test data loaders."""
         # Check if preprocessed data should be saved or not.
         is_processed_data_output_dir_given = self.processed_data_output_dir is not None
@@ -80,45 +87,41 @@ class QuanvNNTrainer:
         )
 
         # Processed the train data using QuanvLayer and set it as train_loader.
-        train_dataset = self.preprocess(self.train_dataset)
+        self.preprocessed_train_dataset = self.preprocess(self.train_dataset)
         if processed_data_save_flag:
             # Save the data.
             train_output_path = os.path.join(
                 self.processed_data_output_dir, "train_" + self.processed_data_filename
             )
-            torch.save(train_dataset, train_output_path)
-        self.train_loader = torch.utils.data.DataLoader(
-            dataset=train_dataset,
-            batch_size=self.batch_size,
-            shuffle=True,
-        )
+            torch.save(self.preprocessed_train_dataset, train_output_path)
+            # Save the data to mlflow as well.
+            mlflow.log_artifact(train_output_path)
 
         # Processed the test data using QuanvLayer and set it as test_loader.
-        test_dataset = self.preprocess(self.test_dataset)
+        self.preprocessed_test_dataset = self.preprocess(self.test_dataset)
         if processed_data_save_flag:
             # Save the data.
             test_output_path = os.path.join(
                 self.processed_data_output_dir, "test_" + self.processed_data_filename
             )
-            torch.save(test_dataset, test_output_path)
-        self.test_loader = torch.utils.data.DataLoader(
-            dataset=test_dataset,
-            batch_size=self.batch_size,
-            shuffle=True,
-        )
+            torch.save(self.preprocessed_test_dataset, test_output_path)
+            # Save the data to mlflow as well.
+            mlflow.log_artifact(test_output_path)
 
     def train_and_test(self):
         """Train and test the QuanvNN."""
-        # 1: Make a processed train_loader and test_loader.
-        self.set_preprocessed_dataloaders()
+        # 1: Make a processed datasets.
+        self.set_preprocessed_datasets()
 
-        # 2: Make Trainer instance with the train_loader and test_loader.
+        # 2: Make Trainer instance with the preprocessed datasets.
         self.trainer = Trainer(
             model=self.qnn.classical_cnn,
-            train_loader=self.train_loader,
-            test_loader=self.test_loader,
+            train_dataset=self.preprocessed_train_dataset,
+            test_dataset=self.preprocessed_test_dataset,
             epochs=self.epochs,
+            batch_size=self.batch_size,
             save_steps=self.save_steps,
+            random_seed=self.random_seed,
             output_dir=self.model_output_dir,
             model_name=self.model_name,
         )

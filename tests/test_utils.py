@@ -10,6 +10,14 @@ from src.utils import fix_seed
 class TestFixSeed:
     """Test class for src.utils.fix_seed function."""
 
+    def __init__(self):
+        self.normal_seed = 91
+
+    @pytest.mark.utils
+    def test_run_with_normal_seed(self):
+        """Normal test assumed that it goes well without any error."""
+        fix_seed(self.normal_seed)
+
     @pytest.mark.utils
     @pytest.mark.parametrize("seed", [91, 42, 57])
     def test_generate_same_value_after_fixing_seeds_with_random_module(self, seed: int):

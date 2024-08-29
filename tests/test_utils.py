@@ -11,7 +11,7 @@ class TestFixSeed:
     """Test class for src.utils.fix_seed function."""
 
     @pytest.mark.utils
-    @pytest.mark.parametrize("seed", [129, 42, 57])
+    @pytest.mark.parametrize("seed", [91, 42, 57])
     def test_generate_same_value_after_fixing_seeds_with_random_module(self, seed: int):
         """Normal test for the random module.
 
@@ -24,7 +24,7 @@ class TestFixSeed:
         assert value_1 == value_2
 
     @pytest.mark.utils
-    @pytest.mark.parametrize("seed", [129, 42, 57])
+    @pytest.mark.parametrize("seed", [91, 42, 57])
     def test_generate_same_value_after_fixing_seeds_with_numpy_module(self, seed: int):
         """Normal test for numpy module.
 
@@ -37,7 +37,7 @@ class TestFixSeed:
         assert value_1 == value_2
 
     @pytest.mark.utils
-    @pytest.mark.parametrize("seed", [129, 42, 57])
+    @pytest.mark.parametrize("seed", [91, 42, 57])
     def test_generate_same_value_after_fixing_seeds_with_torch_module(self, seed: int):
         """Normal test for torch module.
 

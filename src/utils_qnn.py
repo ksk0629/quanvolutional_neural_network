@@ -24,7 +24,7 @@ def decode_by_summing_ones(counts: dict) -> int:
     :param dict counts: result of running qiskit.QuantumCircuit
     :return int: the number of ones in the most likely result
     """
-    # Sort the resuly by the frequency.
+    # Sort the result by the frequency.
     sorted_counts = dict(sorted(counts.items(), key=lambda item: -item[1]))
     # Get the most likely result.
     most_likely_result = list(sorted_counts.keys())[0]

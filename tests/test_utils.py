@@ -12,7 +12,7 @@ class TestFixSeed:
 
     @pytest.mark.utils
     @pytest.mark.parametrize("seed", [129, 42, 57])
-    def test_same_fix_seeds_random(self, seed: int):
+    def test_generate_same_value_after_fixing_seeds_with_random_module(self, seed: int):
         """Normal test for the random module.
 
         :param int seed: random seed
@@ -25,7 +25,7 @@ class TestFixSeed:
 
     @pytest.mark.utils
     @pytest.mark.parametrize("seed", [129, 42, 57])
-    def test_same_fix_seeds_numpy(self, seed: int):
+    def test_generate_same_value_after_fixing_seeds_with_numpy_module(self, seed: int):
         """Normal test for numpy module.
 
         :param int seed: random seed
@@ -38,7 +38,7 @@ class TestFixSeed:
 
     @pytest.mark.utils
     @pytest.mark.parametrize("seed", [129, 42, 57])
-    def test_same_fix_seeds_torch(self, seed: int):
+    def test_generate_same_value_after_fixing_seeds_with_torch_module(self, seed: int):
         """Normal test for torch module.
 
         :param int seed: random seed

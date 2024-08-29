@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from src.utils_qnn import encode_with_threshold
+from src.utils_qnn import decode_by_summing_ones
 
 
 class TestEncodeWithThreshold:
@@ -44,3 +45,32 @@ class TestEncodeWithThreshold:
         """
         with pytest.raises(TypeError):
             encode_with_threshold(self.normal_data, abnormal_threshold)
+
+
+class TestDecodeBySummingOnes:
+    """Test class for src.utils_qnn.decode_by_summing_ones function."""
+
+    @classmethod
+    def setup_class(self):
+        """Setup this test class."""
+        self.max_count_key = "10101"
+        self.max_count_nums = 300
+        self.num_of_ones = 3
+        self.normal_count = {
+            "00000": 100,
+            "00001": 1,
+            "00010": 200,
+            self.max_count_key: self.max_count_nums,
+            "00111": 150,
+        }
+
+    @pytest.mark.utils
+    def test_use_normal_arg(self):
+        """Normal test with normal arguments;
+        The return value
+        - is int.
+        - is equal to self.num_of_ones.
+        """
+        decoded_data = decode_by_summing_ones(self.normal_count)
+        assert isinstance(decoded_data, int)
+        assert decoded_data == self.num_of_ones

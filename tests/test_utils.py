@@ -10,8 +10,10 @@ from src.utils import fix_seed
 class TestFixSeed:
     """Test class for src.utils.fix_seed function."""
 
-    def __init__(self):
-        self.normal_seed = 91
+    @classmethod
+    def setup_class(cls):
+        """Setup this test class."""
+        cls.normal_seed = 91
 
     @pytest.mark.utils
     def test_run_with_normal_seed(self):

@@ -17,15 +17,16 @@ class TestFixSeed:
 
     @pytest.mark.utils
     def test_run_with_normal_seed(self):
-        """Normal test assumed that it goes well without any error."""
+        """Normal test;
+        it goes well without any error.
+        """
         fix_seed(self.normal_seed)
 
     @pytest.mark.utils
     @pytest.mark.parametrize("seed", [91, 42, 57])
     def test_generate_same_value_after_fixing_seeds_with_random_module(self, seed: int):
-        """Normal test for the random module.
-
-        :param int seed: random seed
+        """Normal test for the random module;
+        after executing the method, the same random value is generated.
         """
         fix_seed(seed)
         value_1 = random.random()
@@ -36,9 +37,8 @@ class TestFixSeed:
     @pytest.mark.utils
     @pytest.mark.parametrize("seed", [91, 42, 57])
     def test_generate_same_value_after_fixing_seeds_with_numpy_module(self, seed: int):
-        """Normal test for numpy module.
-
-        :param int seed: random seed
+        """Normal test for numpy module;
+        after executing the method, the same random value is generated.
         """
         fix_seed(seed)
         value_1 = np.random.rand()
@@ -50,8 +50,7 @@ class TestFixSeed:
     @pytest.mark.parametrize("seed", [91, 42, 57])
     def test_generate_same_value_after_fixing_seeds_with_torch_module(self, seed: int):
         """Normal test for torch module.
-
-        :param int seed: random seed
+        after executing the method, the same random value is generated.
         """
         fix_seed(seed)
         value_1 = torch.rand(1)

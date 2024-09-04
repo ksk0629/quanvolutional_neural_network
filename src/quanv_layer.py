@@ -17,17 +17,20 @@ class QuanvLayer:
         kernel_size: tuple[int, int],
         num_filters: int,
         padding_mode: str | None = "constant",
+        is_lookup_mode: bool = True,
     ):
         """Initialise the instance.
 
         :param tuple[int, int] kernel_size: kernel size
         :param int num_filters: number of filters
         :param str | None padding_mode: padding mode (see the document of torch.nn.functional.pad), defaults to "constant"
+        :param bool is_lookup_mode: if it is look-up mode, defaults to True
         """
         # Store the arguments to class variables.
         self.kernel_size = kernel_size
         self.num_filters = num_filters
         self.padding_mode = padding_mode
+        self.is_lookup_mode = is_lookup_mode
 
         # Define constants.
         self.__batch_data_dim = 4
@@ -36,6 +39,12 @@ class QuanvLayer:
         self.quanv_filters = [
             QuanvFilter(self.kernel_size) for _ in range(self.num_filters)
         ]
+
+        if self.is_lookup_mode:
+            [
+                quanv_filter.make_lookup_table(shots=40960)
+                for quanv_filter in self.quanv_filters
+            ]
 
     def run_for_batch(self, batch_data: torch.Tensor, shots: int) -> torch.Tensor:
         """Run the circuit with the given dataset.
@@ -53,9 +62,15 @@ class QuanvLayer:
             raise ValueError(msg)
 
         # Process all data.
+        if self.is_lookup_mode:
+            run_single_channel = self.run_single_channel_with_lookup_tables
+        else:
+            run_single_channel = lambda data: self.run_single_channel(
+                data=data, shots=shots
+            )
         all_outputs = torch.stack(
             [
-                self.run_single_channel(data=data, shots=shots)
+                run_single_channel(data=data)
                 for data in tqdm(batch_data, leave=True, desc="Dataset")
             ]
         )
@@ -149,42 +164,6 @@ class QuanvLayer:
         outputs = self.run_for_batch(batch_data=batch_data, shots=shots)
         torch.save(outputs, filename)
 
-    def make_lookup_tables(self, shots: int):
-        """Make the look-up tables.
-
-        :param int shots: number of shots
-        """
-        [
-            quanv_filter.make_lookup_table(shots=shots)
-            for quanv_filter in self.quanv_filters
-        ]
-
-    def run_for_batch_with_lookup_tables(
-        self, batch_data: torch.Tensor
-    ) -> torch.Tensor:
-        """Use the look-up tables to process given batch data.
-
-        :param torch.Tensor batch_data: batch_data whose shape must be [batch size, channel, height, width]
-        :return torch.Tensor: processed batch_data whose shape must be [batch size, channel, height, width]
-        """
-        # Check the dataset shape.
-        if batch_data.ndim != self.__batch_data_dim:
-            msg = f"""
-                The dimension of the batch_data must be {self.__batch_data_dim},
-                which is [batch size, channel, height, width].
-            """
-            raise ValueError(msg)
-
-        # Process all data.
-        all_outputs = torch.stack(
-            [
-                self.run_single_channel_with_lookup_tables(data=data)
-                for data in tqdm(batch_data, leave=True, desc="Dataset")
-            ]
-        )
-
-        return all_outputs
-
     def run_single_channel_with_lookup_tables(self, data: torch.Tensor) -> torch.Tensor:
         """Use the look-up tables to process a single channel image.
 
@@ -215,11 +194,6 @@ class QuanvLayer:
             tqdm(self.quanv_filters, leave=False, desc="Filters (Look-up tables)")
         ):
             output = np.array(
-                # list(
-                #     operator.itemgetter(*reshaped_sliding_window_data)(
-                #         quanvolutional_filter.lookup_table
-                #     )
-                # )
                 [
                     quanvolutional_filter.lookup_table[small_window]
                     for small_window in encoded_slising_window_data

@@ -31,4 +31,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 markers = [
     "utils: marks tests as utils functions or classes",
+    "dataset: marks tests as dataset"
 ]

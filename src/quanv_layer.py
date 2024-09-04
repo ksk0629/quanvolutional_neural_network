@@ -62,13 +62,7 @@ class QuanvLayer:
 
         return all_outputs
 
-    def run_single_channel(self, data: torch.Tensor, shots: int) -> torch.Tensor:
-        """Run the circuit with a single channel image.
-
-        :param torch.Tensor data: single channel image data
-        :param int shots: number of shots
-        :return torch.Tensor: processed single channel image data
-        """
+    def get_sliding_window_data(self, data: torch.Tensor) -> torch.Tensor:
         # Get only one data from the data.
         # This is a valid operation as this method assumes that the data is a single channel data.
         data = data[0]
@@ -104,6 +98,18 @@ class QuanvLayer:
         sliding_window_data = torch.as_strided(
             padded_data, size=new_shape, stride=new_stride
         )
+
+        return sliding_window_data
+
+    def run_single_channel(self, data: torch.Tensor, shots: int) -> torch.Tensor:
+        """Run the circuit with a single channel image.
+
+        :param torch.Tensor data: single channel image data
+        :param int shots: number of shots
+        :return torch.Tensor: processed single channel image data
+        """
+        # Get sliding window data.
+        sliding_window_data = self.get_sliding_window_data(data)
 
         # Reshape the sliding window data to feed to the quanvolutional filters.
         reshaped_sliding_window_data = torch.reshape(

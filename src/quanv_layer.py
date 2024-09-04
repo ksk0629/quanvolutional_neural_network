@@ -143,6 +143,16 @@ class QuanvLayer:
         outputs = self.run_for_batch(batch_data=batch_data, shots=shots)
         torch.save(outputs, filename)
 
+    def make_lookup_tables(self, shots: int):
+        """Make the look-up tables.
+
+        :param int shots: number of shots
+        """
+        [
+            quanv_filter.make_lookup_table(shots=shots)
+            for quanv_filter in self.quanv_filters
+        ]
+
     def save(self, output_dir: str, filename_prefix: str):
         """Save the QuanvLayer.
 

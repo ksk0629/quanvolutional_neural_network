@@ -65,6 +65,17 @@ class QuanvNN:
         quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
         return self.classical_cnn.classify(quanvoluted_x)
 
+    def classify_with_lookup_tables(self, x: torch.Tensor) -> torch.Tensor:
+        """Classify a batch data using look-up tables.
+
+        :param torch.Tensor x: batch data
+        :return torch.Tensor: result of classification
+        """
+        quanvoluted_x = self.quanv_layer.run_single_channel_with_lookup_tables(
+            batch_data=x
+        )
+        return self.classical_cnn.classify(quanvoluted_x)
+
     def save(self, output_dir: str, filename_prefix: str):
         """Save the QNN config.
 

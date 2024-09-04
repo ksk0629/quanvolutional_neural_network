@@ -77,7 +77,6 @@ class QuanvNNTrainer:
         )
         data, labels = next(iter(data_loader))
         if self.is_lookup_mode:
-            self.qnn.quanv_layer.make_lookup_tables(shots=self.shots)
             processed_data = self.qnn.quanv_layer.run_for_batch_with_lookup_tables(data)
         else:
             processed_data = self.qnn.quanv_layer.run_for_batch(data, shots=self.shots)
@@ -92,6 +91,10 @@ class QuanvNNTrainer:
         processed_data_save_flag = (
             is_processed_data_filename_given and is_processed_data_output_dir_given
         )
+
+        # Make the look-up tables.
+        if self.is_lookup_mode:
+            self.qnn.quanv_layer.make_lookup_tables(shots=self.shots)
 
         # Processed the train data using QuanvLayer and set it as train_loader.
         self.preprocessed_train_dataset = self.preprocess(self.train_dataset)

@@ -159,6 +159,77 @@ class QuanvLayer:
             for quanv_filter in self.quanv_filters
         ]
 
+    def run_for_batch_with_lookup_tables(
+        self, batch_data: torch.Tensor
+    ) -> torch.Tensor:
+        """Use the look-up tables to process given batch data.
+
+        :param torch.Tensor batch_data: batch_data whose shape must be [batch size, channel, height, width]
+        :return torch.Tensor: processed batch_data whose shape must be [batch size, channel, height, width]
+        """
+        # Check the dataset shape.
+        if batch_data.ndim != self.__batch_data_dim:
+            msg = f"""
+                The dimension of the batch_data must be {self.__batch_data_dim},
+                which is [batch size, channel, height, width].
+            """
+            raise ValueError(msg)
+
+        # Process all data.
+        all_outputs = torch.stack(
+            [
+                self.run_single_channel_with_lookup_tables(data=data)
+                for data in tqdm(batch_data, leave=True, desc="Dataset")
+            ]
+        )
+
+        return all_outputs
+
+    def run_single_channel_with_lookup_tables(self, data: torch.Tensor) -> torch.Tensor:
+        """Use the look-up tables to process a single channel image.
+
+        :param torch.Tensor data: single channel image data
+        :return torch.Tensor: processed single channel image data
+        """
+        # Get sliding window data.
+        sliding_window_data = self.get_sliding_window_data(data)
+
+        # Reshape and convert the sliding window data into list to use the key of the look-up tables.
+        reshaped_sliding_window_data = torch.reshape(
+            sliding_window_data, (-1, self.kernel_size[0] * self.kernel_size[1])
+        ).tolist()
+
+        # Define the encoding function.
+        def encode_to_key(data: list[int], threshold: int = 1):
+            return tuple([threshold if d >= threshold else threshold - 1 for d in data])
+
+        # Encode the window data to one of the keys.
+        encoded_slising_window_data = [
+            encode_to_key(small_window_data)
+            for small_window_data in reshaped_sliding_window_data
+        ]
+
+        # Make the output data using the look-up tabels.
+        outputs = np.empty([len(self.quanv_filters), *data.shape])
+        for index, quanvolutional_filter in enumerate(
+            tqdm(self.quanv_filters, leave=False, desc="Filters (Look-up tables)")
+        ):
+            output = np.array(
+                # list(
+                #     operator.itemgetter(*reshaped_sliding_window_data)(
+                #         quanvolutional_filter.lookup_table
+                #     )
+                # )
+                [
+                    quanvolutional_filter.lookup_table[small_window]
+                    for small_window in encoded_slising_window_data
+                ]
+            )
+            outputs[index, :, :] = output.reshape(data.shape)
+        outputs = torch.Tensor(outputs)
+
+        return outputs
+
     def save(self, output_dir: str, filename_prefix: str):
         """Save the QuanvLayer.
 

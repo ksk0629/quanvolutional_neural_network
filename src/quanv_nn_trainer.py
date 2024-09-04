@@ -76,10 +76,7 @@ class QuanvNNTrainer:
             dataset, batch_size=len(dataset), shuffle=False
         )
         data, labels = next(iter(data_loader))
-        if self.is_lookup_mode:
-            processed_data = self.qnn.quanv_layer.run_for_batch_with_lookup_tables(data)
-        else:
-            processed_data = self.qnn.quanv_layer.run_for_batch(data, shots=self.shots)
+        processed_data = self.qnn.quanv_layer.run_for_batch(data, shots=self.shots)
         processed_dataset = PlainDataset(processed_data, labels)
         return processed_dataset
 

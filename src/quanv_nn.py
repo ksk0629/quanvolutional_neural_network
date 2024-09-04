@@ -49,12 +49,7 @@ class QuanvNN:
         :param int shots: number of shots
         :return torch.Tensor: processed data
         """
-        if self.is_lookup_mode:
-            quanvoluted_x = self.quanv_layer.run_for_batch_with_lookup_tables(
-                batch_data=x
-            )
-        else:
-            quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
+        quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
         return self.classical_cnn(quanvoluted_x)
 
     def classify(self, x: torch.Tensor, shots: int) -> torch.Tensor:
@@ -64,12 +59,7 @@ class QuanvNN:
         :param int shots: number of shots
         :return torch.Tensor: result of classification
         """
-        if self.is_lookup_mode:
-            quanvoluted_x = self.quanv_layer.run_for_batch_with_lookup_tables(
-                batch_data=x
-            )
-        else:
-            quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
+        quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
         return self.classical_cnn.classify(quanvoluted_x)
 
     def save(self, output_dir: str, filename_prefix: str):

@@ -120,7 +120,7 @@ class QuanvLayer:
         # Conver the sliding window data from torch.Tensor to numpy.
         reshaped_strided_data_np = reshaped_sliding_window_data.detach().cpu().numpy()
         # Make the initial outputs data as numpy.ndarray.
-        outputs = np.empty([len(self.quanv_filters), *data.shape])
+        outputs = np.empty([len(self.quanv_filters), data.shape[-2], data.shape[-1]])
         for index, quanvolutional_filter in enumerate(
             tqdm(self.quanv_filters, leave=False, desc="Filters")
         ):
@@ -210,7 +210,7 @@ class QuanvLayer:
         ]
 
         # Make the output data using the look-up tabels.
-        outputs = np.empty([len(self.quanv_filters), *data.shape])
+        outputs = np.empty([len(self.quanv_filters), data.shape[-2], data.shape[-1]])
         for index, quanvolutional_filter in enumerate(
             tqdm(self.quanv_filters, leave=False, desc="Filters (Look-up tables)")
         ):

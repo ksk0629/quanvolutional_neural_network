@@ -73,6 +73,7 @@ def prepare_quanv_nn_trainer(
     model_name: str,
     processed_data_filename: str | None,
     processed_data_output_dir: str | None,
+    is_lookup_mode: bool,
 ) -> QuanvNNTrainer:
     """Prepare the trainer for QuanvNN.
 
@@ -92,6 +93,7 @@ def prepare_quanv_nn_trainer(
     :param str model_name: model_name
     :param str | None processed_data_filename: processed data filename to output
     :param str | None processed_data_output_dir: path to processed data output directory
+    :param bool is_lookup_mode: if it is look-up mode
     :return QuanvNNTrainer: trainer for QuanvNN
     """
     quanv_nn = QuanvNN(
@@ -114,6 +116,7 @@ def prepare_quanv_nn_trainer(
         model_name=model_name,
         processed_data_filename=processed_data_filename,
         processed_data_output_dir=processed_data_output_dir,
+        is_lookup_mode=is_lookup_mode,
     )
     return quanv_nn_trainer
 

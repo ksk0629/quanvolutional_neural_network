@@ -11,6 +11,7 @@ train:
   model_name: model_name_proto_qnn
   processed_data_filename: processed_data_filename_proto.pt
   processed_data_output_dir: data/processed_data_output_dir_proto
+  is_lookup_mode: True
 model:
   quanv_kernel_size: [3, 3]
   quanv_num_filters: 3

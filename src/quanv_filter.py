@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 
@@ -208,6 +209,22 @@ class QuanvFilter:
         decoded_data = utils_qnn.decode_by_summing_ones(counts)
 
         return decoded_data
+
+    def make_lookup_table(self, shots: int, threshold: float = 1):
+        """Make the look-up table.
+
+        :param int shots: number of shots
+        :param float threshold: threshold to encode, defaults to 1
+        """
+        possible_inputs = list(
+            itertools.product([threshold, threshold - 1], repeat=self.num_qubits)
+        )
+        vectorised_run = np.vectorize(self.run, signature="(n),()->()")
+        possible_outputs = vectorised_run(np.array(possible_inputs), shots)
+        self.lookup_table = {
+            inputs: outputs
+            for inputs, outputs in zip(possible_inputs, possible_outputs)
+        }
 
     def save(self, output_dir: str, filename_prefix: str):
         """Save the QuanvFilter.

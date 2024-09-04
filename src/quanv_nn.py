@@ -48,6 +48,13 @@ class QuanvNN:
         quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
         return self.classical_cnn(quanvoluted_x)
 
+    def make_lookup_tables(self, shots: int):
+        """Make the look-up tables.
+
+        :param int shots: number of shots
+        """
+        self.quanv_layer.make_lookup_tables(shots=shots)
+
     def classify(self, x: torch.Tensor, shots: int) -> torch.Tensor:
         """Classify a batch data.
 

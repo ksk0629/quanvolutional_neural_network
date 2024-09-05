@@ -15,6 +15,7 @@ class QuanvNN:
         quanv_kernel_size: tuple[int, int],
         quanv_num_filters: int,
         quanv_padding_mode: str | None = "constant",
+        is_lookup_mode: bool = True,
     ):
         """Initialise this QNN.
 
@@ -23,17 +24,20 @@ class QuanvNN:
         :param tuple[int, int] quanv_kernel_size: size of kernel for quanvolutional layer
         :param int quanv_num_filters: number of quanvolutional filters
         :param str | None quanv_padding_mode: padding mode (see the document of torch.nn.functional.pad), defaults to "constant"
+        :param bool is_lookup_mode: if it is look-up mode, defaults to True
         """
         self.in_dim = in_dim
         self.num_classes = num_classes
         self.quanv_kernel_size = quanv_kernel_size
         self.quanv_num_filters = quanv_num_filters
         self.quanv_padding_mode = quanv_padding_mode
+        self.is_lookup_mode = is_lookup_mode
 
         self.quanv_layer = QuanvLayer(
             kernel_size=quanv_kernel_size,
             num_filters=quanv_num_filters,
             padding_mode=quanv_padding_mode,
+            is_lookup_mode=is_lookup_mode,
         )
         new_in_dim = (quanv_num_filters, in_dim[1], in_dim[2])
         self.classical_cnn = ClassicalCNN(in_dim=new_in_dim, num_classes=num_classes)

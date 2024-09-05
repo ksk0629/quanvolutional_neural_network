@@ -26,6 +26,7 @@ class QuanvNNTrainer:
         model_name: str,
         processed_data_filename: str | None,
         processed_data_output_dir: str | None = "./../data",
+        is_lookup_mode: bool = True,
     ):
         """Initialise this trainer.
 
@@ -41,6 +42,7 @@ class QuanvNNTrainer:
         :param str model_name: model_name
         :param str | None processed_data_filename: processed data filename to output
         :param str | None processed_data_output_dir: path to processed data output directory, defaults to "./../data"
+        :param bool is_lookup_mode: if it is look-up mode, defaults to True
         """
         self.random_seed = random_seed
         fix_seed(self.random_seed)
@@ -56,6 +58,7 @@ class QuanvNNTrainer:
         self.model_name = model_name
         self.processed_data_filename = processed_data_filename
         self.processed_data_output_dir = processed_data_output_dir
+        self.is_lookup_mode = is_lookup_mode
 
         # Create the output directory if it is given and does not exist.
         is_processed_data_output_dir_given = self.processed_data_output_dir is not None

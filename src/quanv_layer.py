@@ -17,17 +17,20 @@ class QuanvLayer:
         kernel_size: tuple[int, int],
         num_filters: int,
         padding_mode: str | None = "constant",
+        is_lookup_mode: bool = True,
     ):
         """Initialise the instance.
 
         :param tuple[int, int] kernel_size: kernel size
         :param int num_filters: number of filters
         :param str | None padding_mode: padding mode (see the document of torch.nn.functional.pad), defaults to "constant"
+        :param bool is_lookup_mode: if it is look-up mode, defaults to True
         """
         # Store the arguments to class variables.
         self.kernel_size = kernel_size
         self.num_filters = num_filters
         self.padding_mode = padding_mode
+        self.is_lookup_mode = is_lookup_mode
 
         # Define constants.
         self.__batch_data_dim = 4
@@ -36,6 +39,12 @@ class QuanvLayer:
         self.quanv_filters = [
             QuanvFilter(self.kernel_size) for _ in range(self.num_filters)
         ]
+
+        if self.is_lookup_mode:
+            [
+                quanv_filter.make_lookup_table(shots=40960)
+                for quanv_filter in self.quanv_filters
+            ]
 
     def run_for_batch(self, batch_data: torch.Tensor, shots: int) -> torch.Tensor:
         """Run the circuit with the given dataset.
@@ -53,22 +62,22 @@ class QuanvLayer:
             raise ValueError(msg)
 
         # Process all data.
+        if self.is_lookup_mode:
+            run_single_channel = self.run_single_channel_with_lookup_tables
+        else:
+            run_single_channel = lambda data: self.run_single_channel(
+                data=data, shots=shots
+            )
         all_outputs = torch.stack(
             [
-                self.run_single_channel(data=data, shots=shots)
+                run_single_channel(data=data)
                 for data in tqdm(batch_data, leave=True, desc="Dataset")
             ]
         )
 
         return all_outputs
 
-    def run_single_channel(self, data: torch.Tensor, shots: int) -> torch.Tensor:
-        """Run the circuit with a single channel image.
-
-        :param torch.Tensor data: single channel image data
-        :param int shots: number of shots
-        :return torch.Tensor: processed single channel image data
-        """
+    def get_sliding_window_data(self, data: torch.Tensor) -> torch.Tensor:
         # Get only one data from the data.
         # This is a valid operation as this method assumes that the data is a single channel data.
         data = data[0]
@@ -105,6 +114,18 @@ class QuanvLayer:
             padded_data, size=new_shape, stride=new_stride
         )
 
+        return sliding_window_data
+
+    def run_single_channel(self, data: torch.Tensor, shots: int) -> torch.Tensor:
+        """Run the circuit with a single channel image.
+
+        :param torch.Tensor data: single channel image data
+        :param int shots: number of shots
+        :return torch.Tensor: processed single channel image data
+        """
+        # Get sliding window data.
+        sliding_window_data = self.get_sliding_window_data(data)
+
         # Reshape the sliding window data to feed to the quanvolutional filters.
         reshaped_sliding_window_data = torch.reshape(
             sliding_window_data, (-1, self.kernel_size[0] * self.kernel_size[1])
@@ -114,7 +135,7 @@ class QuanvLayer:
         # Conver the sliding window data from torch.Tensor to numpy.
         reshaped_strided_data_np = reshaped_sliding_window_data.detach().cpu().numpy()
         # Make the initial outputs data as numpy.ndarray.
-        outputs = np.empty([len(self.quanv_filters), *data.shape])
+        outputs = np.empty([len(self.quanv_filters), data.shape[-2], data.shape[-1]])
         for index, quanvolutional_filter in enumerate(
             tqdm(self.quanv_filters, leave=False, desc="Filters")
         ):
@@ -142,6 +163,46 @@ class QuanvLayer:
         """
         outputs = self.run_for_batch(batch_data=batch_data, shots=shots)
         torch.save(outputs, filename)
+
+    def run_single_channel_with_lookup_tables(self, data: torch.Tensor) -> torch.Tensor:
+        """Use the look-up tables to process a single channel image.
+
+        :param torch.Tensor data: single channel image data
+        :return torch.Tensor: processed single channel image data
+        """
+        # Get sliding window data.
+        sliding_window_data = self.get_sliding_window_data(data)
+
+        # Reshape and convert the sliding window data into list to use the key of the look-up tables.
+        reshaped_sliding_window_data = torch.reshape(
+            sliding_window_data, (-1, self.kernel_size[0] * self.kernel_size[1])
+        ).tolist()
+
+        # Define the encoding function.
+        def encode_to_key(data: list[int], threshold: int = 1):
+            return tuple([threshold if d >= threshold else threshold - 1 for d in data])
+
+        # Encode the window data to one of the keys.
+        encoded_slising_window_data = [
+            encode_to_key(small_window_data)
+            for small_window_data in reshaped_sliding_window_data
+        ]
+
+        # Make the output data using the look-up tabels.
+        outputs = np.empty([len(self.quanv_filters), data.shape[-2], data.shape[-1]])
+        for index, quanvolutional_filter in enumerate(
+            tqdm(self.quanv_filters, leave=False, desc="Filters (Look-up tables)")
+        ):
+            output = np.array(
+                [
+                    quanvolutional_filter.lookup_table[small_window]
+                    for small_window in encoded_slising_window_data
+                ]
+            )
+            outputs[index, :, :] = output.reshape(data.shape)
+        outputs = torch.Tensor(outputs)
+
+        return outputs
 
     def save(self, output_dir: str, filename_prefix: str):
         """Save the QuanvLayer.

@@ -91,6 +91,8 @@ class QuanvNN:
         config["quanv_padding_mode"] = self.quanv_padding_mode
         config_filename = f"{filename_prefix}_quanv_nn_config.json"
         quanv_output_dir = os.path.join(output_dir, "quanv")
+        if not os.path.exists(quanv_output_dir):
+            os.makedirs(quanv_output_dir)
         config_path = os.path.join(quanv_output_dir, config_filename)
         with open(config_path, "w") as config_file:
             json.dump(config, config_file, indent=4)

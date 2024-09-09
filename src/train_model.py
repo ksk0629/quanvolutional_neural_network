@@ -22,7 +22,7 @@ def prepare_classical_cnn(
     epochs: int,
     save_steps: int,
     random_seed: int,
-    output_dir: str | None,
+    model_output_dir: str | None,
     model_name: str | None,
 ) -> Trainer:
     """Prepare the trainer for ClassicalCNN.
@@ -35,7 +35,7 @@ def prepare_classical_cnn(
     :param int epochs: number of epochs
     :param int save_steps: number of steps to save
     :param int random_seed: random seed
-    :param str | None output_dir: path to output directory
+    :param str | None model_output_dir: path to output directory
     :param str model_name: model_name
     :return Trainer: trainer for ClassicalCNN
     """
@@ -48,7 +48,7 @@ def prepare_classical_cnn(
         epochs=epochs,
         save_steps=save_steps,
         random_seed=random_seed,
-        output_dir=output_dir,
+        model_output_dir=model_output_dir,
         model_name=model_name,
     )
     return trainer

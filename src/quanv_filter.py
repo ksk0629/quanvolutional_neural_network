@@ -20,7 +20,6 @@ class QuanvFilter:
 
         :param tuple[int, int] kernel_size: kernel size.
         """
-        self.kernel_size = kernel_size
         self.lookup_table = None
 
         # Get the number of qubits.
@@ -227,6 +226,20 @@ class QuanvFilter:
             for inputs, outputs in zip(possible_inputs, possible_outputs)
         }
 
+    def get_circuit_filename(self, filename_prefix: str):
+        """Get a circuit filename to save and load the circuit.
+
+        :param str filename_prefix: prefix of filename
+        """
+        return f"{filename_prefix}_quanv_filter.qpy"
+
+    def get_lookup_table_filename(self, filename_prefix: str):
+        """Get a look-up table filename to save and load the circuit.
+
+        :param str filename_prefix: prefix of filename
+        """
+        return f"{filename_prefix}_quanv_filter_lookup_table.pickle"
+
     def save(self, output_dir: str, filename_prefix: str):
         """Save the QuanvFilter.
 
@@ -238,15 +251,15 @@ class QuanvFilter:
             os.makedirs(output_dir)
 
         # Save the circuit.
-        circuit_filename = f"{filename_prefix}_quanv_filter.qpy"
+        circuit_filename = self.get_circuit_filename(filename_prefix=filename_prefix)
         circuit_path = os.path.join(output_dir, circuit_filename)
         with open(circuit_path, "wb") as file:
             qiskit.qpy.dump(self.circuit, file)
 
         # Save the look-up tabel if it is not None.
         if self.lookup_table is not None:
-            lookup_table_filename = (
-                f"{filename_prefix}_quanv_filter_lookup_table.pickle"
+            lookup_table_filename = self.get_lookup_table_filename(
+                filename_prefix=filename_prefix
             )
             lookup_table_path = os.path.join(output_dir, lookup_table_filename)
             with open(lookup_table_path, "wb") as lookup_table_file:
@@ -255,3 +268,29 @@ class QuanvFilter:
                     lookup_table_file,
                     protocol=pickle.HIGHEST_PROTOCOL,
                 )
+
+    def load(self, input_dir: str, filename_prefix):
+        """Load the quantum circuit.
+
+        :param str input_dir: path to input dir
+        :param str filename_prefix: prefix of input files
+        """
+        # Load the quantum circuit.
+        circuit_filename = self.get_circuit_filename(filename_prefix=filename_prefix)
+        circuit_path = os.path.join(input_dir, circuit_filename)
+        with open(circuit_path, "rb") as circuit_file:
+            # Use the first circuit as this class assumes the saved circuit file includes only one circuit data either way.
+            self.circuit = qiskit.qpy.load(circuit_file)[0]
+        # Register the quantum register and classical registers, again here we use the first registers.
+        self.quantum_register = self.circuit.qregs[0]
+        self.classical_register = self.circuit.cregs[0]
+        # Reset the number of qubits.
+        self.num_qubits = len(self.quantum_register)
+
+        # Load the look-up table.
+        lookup_table_filename = self.get_lookup_table_filename(
+            filename_prefix=filename_prefix
+        )
+        lookup_table_path = os.path.join(input_dir, lookup_table_filename)
+        with open(lookup_table_path, "rb") as lookup_table_file:
+            self.lookup_table = pickle.load(lookup_table_file)

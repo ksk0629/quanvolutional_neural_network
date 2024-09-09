@@ -126,7 +126,7 @@ class QuanvNNTrainer:
             batch_size=self.batch_size,
             save_steps=self.save_steps,
             random_seed=self.random_seed,
-            output_dir=classical_cnn_output_dir,
+            model_output_dir=classical_cnn_output_dir,
             model_name=self.model_name,
         )
 

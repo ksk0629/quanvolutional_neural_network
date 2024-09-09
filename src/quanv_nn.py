@@ -62,6 +62,20 @@ class QuanvNN:
         quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
         return self.classical_cnn.classify(quanvoluted_x)
 
+    def get_classical_cnn_filename(self, filename_prefix: str):
+        """Get ClassicalCNN filename.
+
+        :param str filename_prefix: prefix of filename
+        """
+        return f"{filename_prefix}_classical_cnn_config.pth"
+
+    def get_qnn_config_filename(self, filename_prefix: str):
+        """Get QNN config filename.
+
+        :param str filename_prefix: prefix of filename
+        """
+        return f"{filename_prefix}_quanv_nn_config.json"
+
     def save(self, output_dir: str, filename_prefix: str):
         """Save the QNN config.
 
@@ -76,7 +90,9 @@ class QuanvNN:
         classical_cnn_output_dir = os.path.join(output_dir, "classical_cnn")
         if not os.path.exists(classical_cnn_output_dir):
             os.makedirs(classical_cnn_output_dir)
-        classical_cnn_filename = f"{filename_prefix}_classical_cnn_config.pth"
+        classical_cnn_filename = self.get_classical_cnn_filename(
+            filename_prefix=filename_prefix
+        )
         classical_cnn_path = os.path.join(
             classical_cnn_output_dir, classical_cnn_filename
         )
@@ -89,7 +105,7 @@ class QuanvNN:
         config["quanv_kernel_size"] = self.quanv_kernel_size
         config["quanv_num_filters"] = self.quanv_num_filters
         config["quanv_padding_mode"] = self.quanv_padding_mode
-        config_filename = f"{filename_prefix}_quanv_nn_config.json"
+        config_filename = self.get_qnn_config_filename(filename_prefix=filename_prefix)
         quanv_output_dir = os.path.join(output_dir, "quanv")
         if not os.path.exists(quanv_output_dir):
             os.makedirs(quanv_output_dir)
@@ -102,5 +118,47 @@ class QuanvNN:
             quanv_filter_filename_prefix = f"{filename_prefix}_{index}"
             quanv_filter.save(
                 output_dir=quanv_output_dir,
+                filename_prefix=quanv_filter_filename_prefix,
+            )
+
+    def load(self, input_dir: str, filename_prefix):
+        """Load the QNN.
+
+        :param str input_dir: path to input dir
+        :param str filename_prefix: prefix of input files
+        """
+        # Load the ClassicalCNN.
+        classical_cnn_input_dir = os.path.join(input_dir, "classical_cnn")
+        classical_cnn_filename = self.get_classical_cnn_filename(
+            filename_prefix=filename_prefix
+        )
+        classical_cnn_path = os.path.join(
+            classical_cnn_input_dir, classical_cnn_filename
+        )
+        self.classical_cnn.load_state_dict(
+            torch.load(classical_cnn_path, weights_only=True)
+        )
+
+        # Load the QNN config.
+        config_filename = self.get_qnn_config_filename(filename_prefix=filename_prefix)
+        quanv_input_dir = os.path.join(input_dir, "quanv")
+        config_path = os.path.join(quanv_input_dir, config_filename)
+        with open(config_path) as config_file:
+            config = json.load(config_file)
+        self.in_dim = config["in_dim"]
+        self.num_classes = config["num_classes"]
+        self.quanv_kernel_size = tuple(config["quanv_kernel_size"])
+        self.quanv_num_filters = config["quanv_num_filters"]
+        self.quanv_padding_mode = config["quanv_padding_mode"]
+        # Reset the QuanvLayer config.
+        self.quanv_layer.kernel_size = self.quanv_kernel_size
+        self.quanv_layer.num_filters = self.quanv_num_filters
+        self.quanv_layer.padding_mode = self.quanv_padding_mode
+
+        # Load each QuanvFilter.
+        for index, quanv_filter in enumerate(self.quanv_layer.quanv_filters):
+            quanv_filter_filename_prefix = f"{filename_prefix}_{index}"
+            quanv_filter.load(
+                input_dir=quanv_input_dir,
                 filename_prefix=quanv_filter_filename_prefix,
             )

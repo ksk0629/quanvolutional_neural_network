@@ -1,6 +1,3 @@
-import json
-import os
-
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -203,30 +200,3 @@ class QuanvLayer:
         outputs = torch.Tensor(outputs)
 
         return outputs
-
-    def save(self, output_dir: str, filename_prefix: str):
-        """Save the QuanvLayer.
-
-        :param str output_dir: path to output dir
-        :param str filename_prefix: prefix of output files
-        """
-        # Create the output directory.
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
-        # Make and save the config.
-        config = dict()
-        config["kernel_size"] = self.kernel_size
-        config["num_filters"] = self.num_filters
-        config["padding_mode"] = self.padding_mode
-        config_filename = f"{filename_prefix}_quanv_layer_config.json"
-        config_path = os.path.join(output_dir, config_filename)
-        with open(config_path, "w") as config_file:
-            json.dump(config, config_file, indent=4)
-
-        # Save each QuanvFilter.
-        for index, quanv_filter in enumerate(self.quanv_filters):
-            quanv_filter_filename_prefix = f"{filename_prefix}_{index}"
-            quanv_filter.save(
-                output_dir=output_dir, filename_prefix=quanv_filter_filename_prefix
-            )

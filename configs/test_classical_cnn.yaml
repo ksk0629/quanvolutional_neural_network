@@ -6,5 +6,5 @@ train:
   batch_size: 2
   save_steps: 2
   random_seed: 19
-  output_dir: models/20240827_proto
-  model_name: model_name_proto
+  output_dir: models/proto_cnn
+  model_name: model

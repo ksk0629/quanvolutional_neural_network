@@ -117,6 +117,7 @@ class QuanvNNTrainer:
         self.set_preprocessed_datasets()
 
         # 2: Make Trainer instance with the preprocessed datasets.
+        classical_cnn_output_dir = os.path.join(self.model_output_dir, "classical_cnn")
         self.trainer = Trainer(
             model=self.qnn.classical_cnn,
             train_dataset=self.preprocessed_train_dataset,
@@ -125,9 +126,12 @@ class QuanvNNTrainer:
             batch_size=self.batch_size,
             save_steps=self.save_steps,
             random_seed=self.random_seed,
-            output_dir=self.model_output_dir,
+            output_dir=classical_cnn_output_dir,
             model_name=self.model_name,
         )
 
         # 3: Train the classical part of self.qnn.
         self.trainer.train_and_test()
+
+        # 4: Save them.
+        self.qnn.save(output_dir=self.model_output_dir, filename_prefix=self.model_name)

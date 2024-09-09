@@ -72,6 +72,16 @@ class QuanvNN:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
+        # Save the classical CNN.
+        classical_cnn_output_dir = os.path.join(output_dir, "classical_cnn")
+        if not os.path.exists(classical_cnn_output_dir):
+            os.makedirs(classical_cnn_output_dir)
+        classical_cnn_filename = f"{filename_prefix}_classical_cnn_config.pth"
+        classical_cnn_path = os.path.join(
+            classical_cnn_output_dir, classical_cnn_filename
+        )
+        torch.save(self.classical_cnn.state_dict(), classical_cnn_path)
+
         # Make and save the config.
         config = dict()
         config["in_dim"] = self.in_dim
@@ -80,14 +90,17 @@ class QuanvNN:
         config["quanv_num_filters"] = self.quanv_num_filters
         config["quanv_padding_mode"] = self.quanv_padding_mode
         config_filename = f"{filename_prefix}_quanv_nn_config.json"
-        config_path = os.path.join(output_dir, config_filename)
+        quanv_output_dir = os.path.join(output_dir, "quanv")
+        if not os.path.exists(quanv_output_dir):
+            os.makedirs(quanv_output_dir)
+        config_path = os.path.join(quanv_output_dir, config_filename)
         with open(config_path, "w") as config_file:
             json.dump(config, config_file, indent=4)
 
-        # Save the classical CNN.
-        classical_cnn_filename = f"{filename_prefix}_classical_cnn_config.pth"
-        classical_cnn_path = os.path.join(output_dir, classical_cnn_filename)
-        torch.save(self.classical_cnn.state_dict(), classical_cnn_path)
-
-        # Save the QuanvLayer.
-        self.quanv_layer.save(output_dir=output_dir, filename_prefix=filename_prefix)
+        # Save each QuanvFilter.
+        for index, quanv_filter in enumerate(self.quanv_layer.quanv_filters):
+            quanv_filter_filename_prefix = f"{filename_prefix}_{index}"
+            quanv_filter.save(
+                output_dir=quanv_output_dir,
+                filename_prefix=quanv_filter_filename_prefix,
+            )

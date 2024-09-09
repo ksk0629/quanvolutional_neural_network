@@ -128,7 +128,7 @@ class Trainer:
 
                 # Save the parameters according to self.save_steps.
                 if self.current_epoch % self.save_steps == 0:
-                    filename = f"{self.model_name}_{self.current_epoch}"
+                    filename = f"{self.model_name}_{self.current_epoch}.pth"
                     output_path = os.path.join(self.output_dir, filename)
                     torch.save(self.model.state_dict(), output_path)
 
@@ -172,7 +172,7 @@ class Trainer:
             self.current_epoch = current_epoch
             self.train_and_test_one_epoch()
 
-        filename = f"{self.model_name}_final_{self.epochs}"
+        filename = f"{self.model_name}_final_{self.epochs}.pth"
         output_path = os.path.join(self.output_dir, filename)
         torch.save(self.model.state_dict(), output_path)
 

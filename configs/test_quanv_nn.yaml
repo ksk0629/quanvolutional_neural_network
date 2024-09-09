@@ -7,10 +7,10 @@ train:
   save_steps: 2
   random_seed: 19
   shots: 20480
-  model_output_dir: models/20240827_proto_qnn
-  model_name: model_name_proto_qnn
-  processed_data_filename: processed_data_filename_proto.pt
-  processed_data_output_dir: data/processed_data_output_dir_proto
+  model_output_dir: models/proto_qnn
+  model_name: model_qnn
+  processed_data_filename: processed_data_proto.pt
+  processed_data_output_dir: data/processed_data_proto
   is_lookup_mode: True
 model:
   quanv_kernel_size: [3, 3]

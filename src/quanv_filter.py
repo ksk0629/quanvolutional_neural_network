@@ -1,6 +1,6 @@
 import itertools
-import json
 import os
+import pickle
 
 import random
 
@@ -21,6 +21,7 @@ class QuanvFilter:
         :param tuple[int, int] kernel_size: kernel size.
         """
         self.kernel_size = kernel_size
+        self.lookup_table = None
 
         # Get the number of qubits.
         self.num_qubits: int = kernel_size[0] * kernel_size[1]
@@ -236,16 +237,21 @@ class QuanvFilter:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        # Make and save the config.
-        config = dict()
-        config["kernel_size"] = self.kernel_size
-        config_filename = f"{filename_prefix}_quanv_filter_config.json"
-        config_path = os.path.join(output_dir, config_filename)
-        with open(config_path, "w") as config_file:
-            json.dump(config, config_file, indent=4)
-
         # Save the circuit.
         circuit_filename = f"{filename_prefix}_quanv_filter.qpy"
         circuit_path = os.path.join(output_dir, circuit_filename)
         with open(circuit_path, "wb") as file:
             qiskit.qpy.dump(self.circuit, file)
+
+        # Save the look-up tabel if it is not None.
+        if self.lookup_table is not None:
+            lookup_table_filename = (
+                f"{filename_prefix}_quanv_filter_lookup_table.pickle"
+            )
+            lookup_table_path = os.path.join(output_dir, lookup_table_filename)
+            with open(lookup_table_path, "wb") as lookup_table_file:
+                pickle.dump(
+                    self.lookup_table,
+                    lookup_table_file,
+                    protocol=pickle.HIGHEST_PROTOCOL,
+                )

@@ -58,27 +58,27 @@ class QuanvLayer:
             """
             raise ValueError(msg)
 
-        # Set the appropriate function according to the mode.
+        # Process all data.
         if self.is_lookup_mode:
             run_single_channel = self.run_single_channel_with_lookup_tables
         else:
             run_single_channel = lambda data: self.run_single_channel(
                 data=data, shots=shots
             )
-
         all_outputs = torch.stack(
             [
-                run_single_channel(data=channel)
-                for data in tqdm(
-                    batch_data, leave=True, desc="Dataset"
-                )  # for-loop for batched data
-                for channel in data  # for-loop for each channel of each data
+                run_single_channel(data=data)
+                for data in tqdm(batch_data, leave=True, desc="Dataset")
             ]
         )
 
         return all_outputs
 
     def get_sliding_window_data(self, data: torch.Tensor) -> torch.Tensor:
+        # Get only one data from the data.
+        # This is a valid operation as this method assumes that the data is a single channel data.
+        data = data[0]
+
         # Perform padding accodring to the mode to make the output shape as same as the input.
         padding_size_left = self.kernel_size[1] // 2
         padding_size_right = self.kernel_size[1] // 2

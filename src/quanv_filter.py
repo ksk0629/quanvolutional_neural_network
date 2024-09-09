@@ -229,14 +229,14 @@ class QuanvFilter:
     def get_circuit_filename(self, filename_prefix: str):
         """Get a circuit filename to save and load the circuit.
 
-        :param str filename_prefix: prefict of output files
+        :param str filename_prefix: prefix of filename
         """
         return f"{filename_prefix}_quanv_filter.qpy"
 
     def get_lookup_table_filename(self, filename_prefix: str):
         """Get a look-up table filename to save and load the circuit.
 
-        :param str filename_prefix: prefict of output files
+        :param str filename_prefix: prefix of filename
         """
         return f"{filename_prefix}_quanv_filter_lookup_table.pickle"
 

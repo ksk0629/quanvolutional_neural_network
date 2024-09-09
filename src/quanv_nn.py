@@ -136,18 +136,18 @@ class QuanvNN:
             classical_cnn_input_dir, classical_cnn_filename
         )
         self.classical_cnn.load_state_dict(
-            torch.load(classical_cnn_path), weights_only=True
+            torch.load(classical_cnn_path, weights_only=True)
         )
 
         # Load the QNN config.
         config_filename = self.get_qnn_config_filename(filename_prefix=filename_prefix)
-        quanv_input_dir = os.path.join(input, "quanv")
+        quanv_input_dir = os.path.join(input_dir, "quanv")
         config_path = os.path.join(quanv_input_dir, config_filename)
         with open(config_path) as config_file:
             config = json.load(config_file)
         self.in_dim = config["in_dim"]
         self.num_classes = config["num_classes"]
-        self.quanv_kernel_size = config["quanv_kernel_size"]
+        self.quanv_kernel_size = tuple(config["quanv_kernel_size"])
         self.quanv_num_filters = config["quanv_num_filters"]
         self.quanv_padding_mode = config["quanv_padding_mode"]
         # Reset the QuanvLayer config.

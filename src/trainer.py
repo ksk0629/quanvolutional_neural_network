@@ -49,7 +49,8 @@ class Trainer:
         self.model_name = model_name if model_name is not None else "model"
         self.current_epoch = 0
 
-        self.criterion = nn.NLLLoss()
+        # self.criterion = nn.NLLLoss()
+        self.criterion = nn.CrossEntropyLoss()
         self.optimiser = optim.Adam(self.model.parameters())
 
         self.train_loader = torch.utils.data.DataLoader(

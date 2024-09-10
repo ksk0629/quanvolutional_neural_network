@@ -39,7 +39,7 @@ class QuanvLayer:
 
         if self.is_lookup_mode:
             [
-                quanv_filter.make_lookup_table(shots=40960)
+                quanv_filter.make_lookup_table(shots=91920)
                 for quanv_filter in self.quanv_filters
             ]
 

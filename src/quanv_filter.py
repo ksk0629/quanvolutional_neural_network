@@ -216,15 +216,16 @@ class QuanvFilter:
         :param int shots: number of shots
         :param float threshold: threshold to encode, defaults to 1
         """
-        possible_inputs = list(
-            itertools.product([threshold, threshold - 1], repeat=self.num_qubits)
-        )
-        vectorised_run = np.vectorize(self.run, signature="(n),()->()")
-        possible_outputs = vectorised_run(np.array(possible_inputs), shots)
-        self.lookup_table = {
-            inputs: outputs
-            for inputs, outputs in zip(possible_inputs, possible_outputs)
-        }
+        if self.lookup_table is None:
+            possible_inputs = list(
+                itertools.product([threshold, threshold - 1], repeat=self.num_qubits)
+            )
+            vectorised_run = np.vectorize(self.run, signature="(n),()->()")
+            possible_outputs = vectorised_run(np.array(possible_inputs), shots)
+            self.lookup_table = {
+                inputs: outputs
+                for inputs, outputs in zip(possible_inputs, possible_outputs)
+            }
 
     def get_circuit_filename(self, filename_prefix: str):
         """Get a circuit filename to save and load the circuit.

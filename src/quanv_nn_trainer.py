@@ -57,6 +57,9 @@ class QuanvNNTrainer:
         self.processed_data_filename = processed_data_filename
         self.is_lookup_mode = is_lookup_mode
 
+        if not os.path.exists(self.model_output_dir):
+            os.makedirs(self.model_output_dir)
+
     def preprocess(self, dataset: torch.utils.data.Dataset) -> torch.utils.data.Dataset:
         """Preprocess a given dataset using the QuanvLayer.
 

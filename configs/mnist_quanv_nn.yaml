@@ -1,6 +1,6 @@
 mlflow:
   experiment_name: mnist
-  run_name: qnn
+  run_name: paper_qnn
 train:
   epochs: 20
   batch_size: 256

@@ -49,16 +49,9 @@ class Trainer:
         self.model_name = model_name if model_name is not None else "model"
         self.current_epoch = 0
 
-        # Make the output directry name with date and time information.
-        dt_now = datetime.datetime.now()
-        year = str(dt_now.year).zfill(4)
-        month = str(dt_now.month).zfill(2)
-        day = str(dt_now.day).zfill(2)
-        hour = str(dt_now.hour).zfill(2)
-        minute = str(dt_now.minute).zfill(2)
-        second = str(dt_now.second).zfill(2)
-        postfix = f"{year}{month}{day}{hour}{minute}{second}"
-        self.model_output_dir = f"{model_output_dir}_{postfix}"
+        self.model_output_dir = model_output_dir
+        if not os.path.exists(self.model_output_dir):
+            os.makedirs(self.model_output_dir)
 
         # self.criterion = nn.NLLLoss()
         self.criterion = nn.CrossEntropyLoss()

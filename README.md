@@ -28,3 +28,19 @@ Trivially, there would be infinite ways of encoding and decoding methods, yet th
 Generally speaking, unfortunately, it still takes a large amount of time to execute quantum circuit. So, I employed the look-up table technique used in the original paper as well. This is quite simple. The quanvolutional layer prepares look-up tables between the inputs and outputs of every each quantum filter in advance instead of running each quantum filter every single time. Although it depends on the kernel size, which is the number of qubits, this drastically reduces the execution time.
 
 Also, as the quanvolutional layer is not trainable and is the top layer, the quanvolutional layer may be regarded as a preprocess.
+
+## Experiment Result
+### MNIST
+The following graphs are logged during the training by MLflow Tracking.
+
+|  | loss graph | accuracy graph |
+| --- | --- | --- |
+| QNN | ![the graphs of loss values of QNN](./images/mnist_qnn_losses.png) | ![the graphs of accuracies of QNN](./images/mnist_qnn_accuracies.png) |
+| CNN | ![the graphs of loss values of CNN](./images/mnist_cnn_losses.png) | ![the graphs of accuracies of CNN](./images/mnist_cnn_accuracies.png) |
+
+Each value when the training was finished is as follows.
+
+| | train_crossentropy | train_accuracy | test_crossentropy | test_accuracy |
+| --- | --- | --- | --- | --- |
+| QNN | 1.501229904053059 | 0.9604833333333334 | 1.4927423000335693 | 0.9706 |
+| CNN | 1.4678614017811227 | 0.9941833333333333 | 1.473890781402588 | 0.9869 |

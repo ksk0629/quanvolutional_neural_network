@@ -48,4 +48,10 @@ Each value when the training was finished is as follows.
 | QNN | 1.501229904053059 | 0.9604833333333334 | 1.4927423000335693 | 0.9706 |
 | CNN | 1.4678614017811227 | 0.9941833333333333 | 1.473890781402588 | 0.9869 |
 
+The following graph shows the test accuracies between the QuanvNN and the ClassicalCNN.
+
+![test accuracies between QuanvNN and ClassicalCNN](./images/mnist_accuracy_graph.png)
+
+I know the accuracies are different from the above table. I have not checked this hypothesis, yet I reckon that is because `test_accuracy` is calculated according to the given batch size, which is 256 in that case, meanwhile the graph is drawn by `./scripts/get_accuracy_graph.py` using the batch size as a whole dataset size, which is 10000. 10000 is definately unable to be divided by 256, so some data is probably duplicated during calculating the accuracies.
+
 We cannot observe the advantage of QNN here.

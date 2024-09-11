@@ -107,4 +107,4 @@ if __name__ == "__main__":
 
     plt.show()
 
-    plt.savefig("mnist_accuracy_graph.png", bbox_inches="tight")  # CHANGE
+    fig.savefig("mnist_accuracy_graph.png", bbox_inches="tight")  # CHANGE

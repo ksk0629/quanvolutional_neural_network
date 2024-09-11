@@ -1,0 +1,17 @@
+mlflow:
+  experiment_name: mnist
+  run_name: qnn
+train:
+  epochs: 20
+  batch_size: 256
+  save_steps: 100
+  random_seed: 91
+  shots: 91920
+  model_output_dir: models/mnist_qnn
+  model_name: model
+  processed_data_filename: processed_mnist.pt
+  is_lookup_mode: True
+model:
+  quanv_kernel_size: [3, 3]
+  quanv_num_filters: 25
+  quanv_padding_mode: "constant"

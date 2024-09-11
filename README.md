@@ -44,3 +44,5 @@ Each value when the training was finished is as follows.
 | --- | --- | --- | --- | --- |
 | QNN | 1.501229904053059 | 0.9604833333333334 | 1.4927423000335693 | 0.9706 |
 | CNN | 1.4678614017811227 | 0.9941833333333333 | 1.473890781402588 | 0.9869 |
+
+We cannot observe the advantage of QNN here.

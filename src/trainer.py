@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import mlflow
@@ -42,14 +43,18 @@ class Trainer:
         self.model = model
         self.epochs = epochs
         self.save_steps = save_steps
-        self.model_output_dir = model_output_dir
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
         self.batch_size = batch_size
         self.model_name = model_name if model_name is not None else "model"
         self.current_epoch = 0
 
-        self.criterion = nn.NLLLoss()
+        self.model_output_dir = model_output_dir
+        if not os.path.exists(self.model_output_dir):
+            os.makedirs(self.model_output_dir)
+
+        # self.criterion = nn.NLLLoss()
+        self.criterion = nn.CrossEntropyLoss()
         self.optimiser = optim.Adam(self.model.parameters())
 
         self.train_loader = torch.utils.data.DataLoader(
@@ -65,6 +70,9 @@ class Trainer:
 
         self.train_loss_history = []
         self.test_loss_history = []
+
+        self.train_accuracy_history = []
+        self.test_accuracy_history = []
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -112,6 +120,10 @@ class Trainer:
 
         train_loss = 0
         with tqdm(self.train_loader) as tepoch:
+            # Initialise the count of correctly predicted data.
+            total_correct = 0
+            total = 0
+
             for data, label in tepoch:
                 # Set the description.
                 tepoch.set_description(f"Epoch {self.current_epoch} (train)")
@@ -123,8 +135,17 @@ class Trainer:
                 loss_value = self.update(data=data, label=label)
                 train_loss += loss_value
 
-                # Set the current loss value.
-                tepoch.set_postfix(loss=loss_value)
+                # Get the number of correctly predicted ones.
+                predicted_label = self.model.classify(data)
+                num_correct = (predicted_label == label).sum().item()
+                total_correct += num_correct
+                total += len(label)
+
+                # Set the current loss and accuracy.
+                batch_accuracy = num_correct / len(label)
+                tepoch.set_postfix(
+                    {"Loss_train": loss_value, "Accuracy_train": batch_accuracy}
+                )
 
                 # Save the parameters according to self.save_steps.
                 if self.current_epoch % self.save_steps == 0:
@@ -137,6 +158,11 @@ class Trainer:
         self.train_loss_history.append(average_train_loss)
         mlflow.log_metric(f"train_loss", average_train_loss, step=self.current_epoch)
 
+        # Store the accuracy.
+        accuracy = total_correct / total
+        self.train_accuracy_history.append(accuracy)
+        mlflow.log_metric(f"train_accuracy", accuracy, step=self.current_epoch)
+
     def eval(self):
         """Evaluate the model."""
         self.model.eval()
@@ -144,6 +170,10 @@ class Trainer:
         test_loss = 0
         with tqdm(self.test_loader) as tepoch:
             with torch.no_grad():  # without calculating the gradients.
+                # Initialise the count of correctly predicted data.
+                total_correct = 0
+                total = 0
+
                 for data, label in tepoch:
                     # Set the description.
                     tepoch.set_description(f"Epoch {self.current_epoch} (test)")
@@ -154,12 +184,29 @@ class Trainer:
                     loss_value = self.calc_loss(data=data, label=label)
                     test_loss += loss_value
 
-                    # Set the current loss value.
-                    tepoch.set_postfix(loss=loss_value)
+                    # Get the number of correctly predicted ones.
+                    predicted_label = self.model.classify(data)
+                    num_correct = (predicted_label == label).sum().item()
+                    total_correct += num_correct
+                    total += len(label)
+
+                    # Set the current loss and accuracy.
+                    batch_accuracy = num_correct / len(label)
+                    tepoch.set_postfix(
+                        {
+                            "Loss_test": loss_value,
+                            "Accuracy_test": batch_accuracy,
+                        }
+                    )
         # Store the loss value.
         average_test_loss = test_loss / len(self.test_loader)
         self.test_loss_history.append(average_test_loss)
         mlflow.log_metric(f"test_loss", average_test_loss, step=self.current_epoch)
+
+        # Store the accuracy.
+        accuracy = total_correct / total
+        self.test_accuracy_history.append(accuracy)
+        mlflow.log_metric(f"test_accuracy", accuracy, step=self.current_epoch)
 
     def train_and_test_one_epoch(self):
         """Train and evaluate the model only once."""
@@ -168,7 +215,7 @@ class Trainer:
 
     def train_and_test(self):
         """Train and evaluate the model self.epochs times."""
-        for current_epoch in tqdm(range(1, self.epochs + 1)):
+        for current_epoch in range(1, self.epochs + 1):
             self.current_epoch = current_epoch
             self.train_and_test_one_epoch()
 

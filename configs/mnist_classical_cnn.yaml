@@ -1,0 +1,10 @@
+mlflow:
+  experiment_name: mnist
+  run_name: paper_cnn
+train:
+  epochs: 20
+  batch_size: 256
+  save_steps: 100
+  random_seed: 91
+  model_output_dir: models/mnist_cnn
+  model_name: model

@@ -1,4 +1,30 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-# quanvolutional_neural_network
-This is the repository of the scientific paper, Quanvolutional Neural Networks: Powering Image Recognition with Quantum Circuits.
+# Quanvolutional Neural Network
+This is the respository for one of the implementations of the Quanvolutional Neural Network (QNN) proposed in the scientific paper, Quanvolutional Neural Networks: Powering Image Recognition with Quantum Circuits. As far as I understand, the main focus of the original paper is to propose the general idea of a quantum version of convolutional layer rather than how to implement it. Although so, I implemented one realisation of this QNN structure mentioned in the original paper. That means the quanvolutional layer of this QNN is not trainable.
+
+## Easy Summary
+At the moment, the structure of the realisation is as follows.
+
+1. quanvolutional layer
+2. convolutional layer
+3. pooling layer
+4. convolutional layer
+5. pooling layer
+6. dense layer
+7. dense layer (for output)
+
+Only the first layer leverages the power of the quantum computing. There are plenty of information of the classical layers in the digital ocean. So, only the quantum part will be seen in this document.
+
+The quanvolutional layer has got arbitrary number of the quantum filters, which are quantum circuits, as analogy to the classical convolutional layer. Each quantum filter, i.e., quantum circuit, is built randomly. There is set of quantum gates and some gates in the set are chosen when the quantum filter is created.
+
+As same as the classical convolutional layer, the subsections of the input image are fed to the quanvolutional layer. The subsection data is encoded to the qubits of each quantum filter and processed. The results of the execution of each quantum filter are decoded to a scalar. Trivially, the number of outputs are the same as the number of quantum filters. In the end of applying the quanvolutional layer, the output feature maps are obtained.
+
+Trivially, there would be infinite ways of encoding and decoding methods, yet the following methods are employed.
+
+- Encoding: If the pixel value is greater than 0, then it is encoded to $\ket{1}$, otherwise $\ket{0}$.
+- Decoding: The number of 1's in the most likely outcome is Summed.
+
+Generally speaking, unfortunately, it still takes a large amount of time to execute quantum circuit. So, I employed the look-up table technique used in the original paper as well. This is quite simple. The quanvolutional layer prepares look-up tables between the inputs and outputs of every each quantum filter in advance instead of running each quantum filter every single time. Although it depends on the kernel size, which is the number of qubits, this drastically reduces the execution time.
+
+Also, as the quanvolutional layer is not trainable and is the top layer, the quanvolutional layer may be regarded as a preprocess.

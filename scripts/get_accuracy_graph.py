@@ -75,15 +75,36 @@ if __name__ == "__main__":
 
     # Make the plot.
     plot_data = {
-        "QuanvNN": quanv_accuracy,
-        "ClassicalCNN": classical_cnn_accuracy,
+        "QuanvNN": quanv_accuracy * 100,
+        "ClassicalCNN": classical_cnn_accuracy * 100,
     }
-    fig = plt.figure(figsize=(8, 8))
-    plt.bar(plot_data.keys(), plot_data.values())
+    colour = ("green", "orange")
+    fig, ax = plt.subplots(figsize=(8, 8))
+    data = plot_data.values()
+    labels = plot_data.keys()
+    width = 0.4
+    rect = ax.bar(labels, data, width)
 
-    plt.xlabel("Type of NN")
-    plt.ylabel("Accuracy")
-    plt.title("QuanvNN vs. ClassicalCNN over MNIST")  # CHANGE
+    # Draw accuracy value on the bars.
+    def autolabel(rects):
+        for rect in rects:
+            height = rect.get_height()
+            ax.annotate(
+                f"{height}%",
+                xy=(rect.get_x() + rect.get_width() / 2, height),
+                xytext=(0, 3),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+            )
+
+    ax.bar(labels, data, color=colour)
+
+    ax.set_xlabel("Type of NN")
+    ax.set_xlabel("Accuracy")
+    ax.set_title("QuanvNN vs. ClassicalCNN over MNIST")  # CHANGE
+    autolabel(rect)
+
     plt.show()
 
     plt.savefig("mnist_accuracy_graph.png", bbox_inches="tight")

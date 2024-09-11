@@ -2,6 +2,7 @@
 data/*
 models/*
 mlruns/*
+notebooks/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

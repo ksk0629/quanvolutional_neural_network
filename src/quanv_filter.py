@@ -6,6 +6,7 @@ import random
 
 import numpy as np
 import qiskit
+from qiskit import qpy
 import qiskit_aer
 
 from sqrt_swap_gate import SqrtSwapGate
@@ -255,7 +256,7 @@ class QuanvFilter:
         circuit_filename = self.get_circuit_filename(filename_prefix=filename_prefix)
         circuit_path = os.path.join(output_dir, circuit_filename)
         with open(circuit_path, "wb") as file:
-            qiskit.qpy.dump(self.circuit, file)
+            qpy.dump(self.circuit, file)
 
         # Save the look-up tabel if it is not None.
         if self.lookup_table is not None:
@@ -281,7 +282,7 @@ class QuanvFilter:
         circuit_path = os.path.join(input_dir, circuit_filename)
         with open(circuit_path, "rb") as circuit_file:
             # Use the first circuit as this class assumes the saved circuit file includes only one circuit data either way.
-            self.circuit = qiskit.qpy.load(circuit_file)[0]
+            self.circuit = qpy.load(circuit_file)[0]
         # Register the quantum register and classical registers, again here we use the first registers.
         self.quantum_register = self.circuit.qregs[0]
         self.classical_register = self.circuit.cregs[0]

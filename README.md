@@ -1,7 +1,10 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # Quanvolutional Neural Network
+## About This Repository
 This is the respository for one of the implementations of the Quanvolutional Neural Network (QNN) proposed in the scientific paper, Quanvolutional Neural Networks: Powering Image Recognition with Quantum Circuits. As far as I understand, the main focus of the original paper is to propose the general idea of a quantum version of convolutional layer rather than how to implement it. Although so, I implemented one realisation of this QNN structure mentioned in the original paper. That means the quanvolutional layer of this QNN is not trainable.
+
+**PyTorch** and **Qiskit** are employed for the machine learning and quantum computing parts, respectively.
 
 ## Easy Summary
 At the moment, the structure of the realisation is as follows.

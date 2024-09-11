@@ -1,15 +1,15 @@
 import numpy as np
 
 
-def encode_with_threshold(data: np.ndarray, threshold: float = 1) -> np.ndarray:
+def encode_with_threshold(data: np.ndarray, threshold: float = 0) -> np.ndarray:
     """Encode the given data according to the threshold. This method is suggested in the original paper.
 
     :param np.ndarray data: original data
-    :param float threshold: threshold to encode
+    :param float threshold: threshold to encode, defaults to 0
     :return np.ndarray: encoded data, which is quantum state
     """
     flatten_data = data.flatten()
-    encode_flags = np.where(flatten_data >= threshold, 1, 0).astype(np.float64)
+    encode_flags = np.where(flatten_data > threshold, 1, 0).astype(np.float64)
     quantum_state = 1
     for encode_flag in encode_flags:
         encoded_state = np.array([1, 0]) if encode_flag == 0 else np.array([0, 1])

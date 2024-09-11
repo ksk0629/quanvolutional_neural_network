@@ -174,8 +174,10 @@ class QuanvLayer:
         ).tolist()
 
         # Define the encoding function.
-        def encode_to_key(data: list[int], threshold: int = 1):
-            return tuple([threshold if d >= threshold else threshold - 1 for d in data])
+        def encode_to_key(data: list[int], threshold: int = 0):
+            return tuple(
+                [threshold + 1 if d > threshold else threshold - 1 for d in data]
+            )
 
         # Encode the window data to one of the keys.
         encoded_slising_window_data = [

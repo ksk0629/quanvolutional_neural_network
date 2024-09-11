@@ -210,15 +210,15 @@ class QuanvFilter:
 
         return decoded_data
 
-    def make_lookup_table(self, shots: int, threshold: float = 1):
+    def make_lookup_table(self, shots: int, threshold: float = 0):
         """Make the look-up table.
 
         :param int shots: number of shots
-        :param float threshold: threshold to encode, defaults to 1
+        :param float threshold: threshold to encode, defaults to 0
         """
         if self.lookup_table is None:
             possible_inputs = list(
-                itertools.product([threshold, threshold - 1], repeat=self.num_qubits)
+                itertools.product([threshold + 1, threshold], repeat=self.num_qubits)
             )
             vectorised_run = np.vectorize(self.run, signature="(n),()->()")
             possible_outputs = vectorised_run(np.array(possible_inputs), shots)

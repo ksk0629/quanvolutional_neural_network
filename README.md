@@ -31,7 +31,7 @@ Also, as the quanvolutional layer is not trainable and is the top layer, the qua
 
 ## Experiment Result
 ### MNIST
-The following graphs are logged during the training by MLflow Tracking.
+The following graphs are logged during the training by MLflow Tracking. "Step" implies epoch.
 
 |  | loss graph | accuracy graph |
 | --- | --- | --- |

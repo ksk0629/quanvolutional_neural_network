@@ -37,12 +37,6 @@ class QuanvLayer:
             QuanvFilter(self.kernel_size) for _ in range(self.num_filters)
         ]
 
-        if self.is_lookup_mode:
-            [
-                quanv_filter.make_lookup_table(shots=91920)
-                for quanv_filter in self.quanv_filters
-            ]
-
     def run_for_batch(self, batch_data: torch.Tensor, shots: int) -> torch.Tensor:
         """Run the circuit with the given dataset.
 
@@ -60,6 +54,10 @@ class QuanvLayer:
 
         # Set the appropriate function according to the mode.
         if self.is_lookup_mode:
+            [
+                quanv_filter.make_lookup_table(shots=shots)
+                for quanv_filter in self.quanv_filters
+            ]
             run_single_channel = self.run_single_channel_with_lookup_tables
         else:
             run_single_channel = lambda data: self.run_single_channel(

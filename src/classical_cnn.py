@@ -21,8 +21,6 @@ class ClassicalCNN(nn.Module):
         self.dilation = 1
         self.pool_size = 2
         self.num_classes = num_classes
-        self.relu = F.relu
-        self.softmax = F.softmax
 
         # Set the first convolutional layer.
         self.num_filter1 = 50
@@ -101,6 +99,22 @@ class ClassicalCNN(nn.Module):
             in_features=self.fc1_output_size, out_features=self.num_classes
         )
 
+    def activate(self, x: torch.Tensor) -> callable:
+        """Return the return value of the specified activation function, which is relu now.
+
+        :param torch.Tensor x: input data
+        :return callable: activation function
+        """
+        return F.relu(x)
+
+    def softmax(self, x: torch.Tensor) -> F.softmax:
+        """Return the return value of the softmax function.
+
+        :param torch.Tensor x: input data
+        :return F.softmax: softmax function
+        """
+        return F.softmax(x, dim=1)
+
     def calc_output_shape(
         self,
         in_height: int,
@@ -133,11 +147,11 @@ class ClassicalCNN(nn.Module):
         :return torch.Tensor: processed data
         """
         x = self.conv1(x)
-        x = self.relu(x)
+        x = self.activate(x)
         x = self.pool1(x)
 
         x = self.conv2(x)
-        x = self.relu(x)
+        x = self.activate(x)
         x = self.pool2(x)
 
         # Transform the output shape to input the fully connected layer.
@@ -148,7 +162,7 @@ class ClassicalCNN(nn.Module):
 
         x = self.fc2(x)
 
-        return self.softmax(x, dim=1)
+        return self.softmax(x)
 
     def classify(self, x: torch.Tensor) -> torch.Tensor:
         """Classify data.

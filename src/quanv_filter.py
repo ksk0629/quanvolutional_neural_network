@@ -309,7 +309,7 @@ class QuanvFilter:
         # Reset the number of qubits.
         self.num_qubits = len(self.quantum_register)
 
-        # Load the look-up table if existed.
+        # Load the look-up table if exists.
         lookup_table_filename = self.get_lookup_table_filename(
             filename_prefix=filename_prefix
         )

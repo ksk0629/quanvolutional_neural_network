@@ -154,27 +154,28 @@ class QuanvLayer:
         :param int shots: number of shots
         :return torch.Tensor: processed single channel image data
         """
-        # Get sliding window data.
+        # Get the sliding window data.
         sliding_window_data = self.get_sliding_window_data(data)
 
-        # Reshape the sliding window data to feed to the quanvolutional filters.
+        # Reshape the sliding window data fed to the quanvolutional filters.
         reshaped_sliding_window_data = torch.reshape(
             sliding_window_data, (-1, self.kernel_size[0] * self.kernel_size[1])
         )
 
         # >>> Numpy computing zone >>>
-        # Conver the sliding window data from torch.Tensor to numpy.
+        # Convert the sliding window data from torch.Tensor to numpy.
         reshaped_strided_data_np = reshaped_sliding_window_data.detach().cpu().numpy()
-        # Make the initial outputs data as numpy.ndarray.
+        # Make the initial output data as numpy.ndarray.
         outputs = np.empty([len(self.quanv_filters), data.shape[-2], data.shape[-1]])
+
         for index, quanvolutional_filter in enumerate(
             tqdm(self.quanv_filters, leave=False, desc="Filters")
         ):
-            # Vectorise quanvolutional_filter.run function to make it quick.
+            # Vectorise quanvolutional_filter.run function to make it fast.
             vectorized_quanvolutional_filter_run = np.vectorize(
                 quanvolutional_filter.run, signature="(n),(),(),()->()"
             )
-            # Perform each quanvolutional filter.
+            # Apply each quanvolutional filter.
             outputs[index, :, :] = vectorized_quanvolutional_filter_run(
                 reshaped_strided_data_np,
                 self.encoding_method,

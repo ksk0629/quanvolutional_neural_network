@@ -84,7 +84,7 @@ class QuanvFilter:
         self.simulator = qiskit_aer.AerSimulator()
 
     def __build_initial_circuit(self):
-        """Build the initial ciruit."""
+        """Build the initial circuit."""
         self.quantum_register = qiskit.QuantumRegister(
             size=self.num_qubits, name="quantum_register"
         )
@@ -167,7 +167,7 @@ class QuanvFilter:
             self.circuit.append(gate, qubits)
 
     def load_data(self, encoded_data: np.ndarray) -> qiskit.QuantumCircuit:
-        """Load the encoded data to the cirucit.
+        """Load the encoded data to the circuit.
 
         :param np.ndarray encoded_data: encoded data
         :return qiskit.QuantumCircuit: circuit having data encoded part
@@ -258,7 +258,7 @@ class QuanvFilter:
         with open(circuit_path, "wb") as file:
             qpy.dump(self.circuit, file)
 
-        # Save the look-up tabel if it is not None.
+        # Save the look-up table if it is not None.
         if self.lookup_table is not None:
             lookup_table_filename = self.get_lookup_table_filename(
                 filename_prefix=filename_prefix

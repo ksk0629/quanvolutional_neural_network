@@ -21,7 +21,10 @@ class QuanvFilter:
 
         :param tuple[int, int] kernel_size: kernel size.
         """
+        # Initialise the look-up table.
         self.lookup_table = None
+        # Set the simulator.
+        self.simulator = qiskit_aer.AerSimulator()
 
         # Get the number of qubits.
         self.num_qubits: int = kernel_size[0] * kernel_size[1]
@@ -35,53 +38,21 @@ class QuanvFilter:
 
         # Step 2: Select a two-qubit gate according to the connection probabilities.
         self.selected_gates = []
-        # Define the set of two-qubits gates.
-        self.two_qubit_four_parameterised_gates = [qiskit.circuit.library.CUGate]
-        sqrt_swap_gate = SqrtSwapGate()
-        self.two_qubit_non_parameterised_gates = [
-            qiskit.circuit.library.CXGate(),
-            qiskit.circuit.library.SwapGate(),
-            sqrt_swap_gate.get_gate(),
-        ]
-        self.two_qubit_gates = (
-            self.two_qubit_four_parameterised_gates
-            + self.two_qubit_non_parameterised_gates
-        )
-        # Select two-qubit gates to the circuit.
+        self.__set_two_qubit_gate_set()
         self.__select_two_qubit_gates()
 
         # Step 3: Select one-qubit gates.
-        # Define the set of one-qubit gates.
-        self.one_qubit_one_parameterised_gates = [
-            qiskit.circuit.library.RXGate,
-            qiskit.circuit.library.RYGate,
-            qiskit.circuit.library.RZGate,
-            qiskit.circuit.library.PhaseGate,
-        ]
-        self.one_qubit_three_parameterised_gates = [qiskit.circuit.library.UGate]
-        self.one_qubit_non_parametrised_gates = [
-            qiskit.circuit.library.TGate(),
-            qiskit.circuit.library.HGate(),
-        ]
-        self.one_qubit_gates = (
-            self.one_qubit_one_parameterised_gates
-            + self.one_qubit_three_parameterised_gates
-            + self.one_qubit_non_parametrised_gates
-        )
-        # Select one-qubit gates.
+        self.__set_one_qubit_gate_set()
         self.num_one_qubit_gates = np.random.randint(
             low=0, high=2 * self.num_qubits**2 - 1
         )
         self.__select_one_qubit_gates()
 
-        # Step 4: Apply the randomly selected gates at an random order.
+        # Step 4: Apply the randomly selected gates in an random order.
         self.__apply_selected_gates()
 
         # Step 5: Set measurements to the lot qubits.
         self.circuit.measure(self.quantum_register, self.classical_register)
-
-        # Transpile the circuit.
-        self.simulator = qiskit_aer.AerSimulator()
 
     def __build_initial_circuit(self):
         """Build the initial circuit."""
@@ -106,6 +77,20 @@ class QuanvFilter:
                 self.connection_probabilities[(index, next_index)] = (
                     connection_probability
                 )
+
+    def __set_two_qubit_gate_set(self):
+        """Set two-qubit gate set to self.two_qubit_gates variable."""
+        self.two_qubit_four_parameterised_gates = [qiskit.circuit.library.CUGate]
+        sqrt_swap_gate = SqrtSwapGate()
+        self.two_qubit_non_parameterised_gates = [
+            qiskit.circuit.library.CXGate(),
+            qiskit.circuit.library.SwapGate(),
+            sqrt_swap_gate.get_gate(),
+        ]
+        self.two_qubit_gates = (
+            self.two_qubit_four_parameterised_gates
+            + self.two_qubit_non_parameterised_gates
+        )
 
     def __select_two_qubit_gates(self):
         """Select two-qubit gates."""
@@ -135,6 +120,25 @@ class QuanvFilter:
 
             # Keep the selected gate.
             self.selected_gates.append((selected_gate, shuffled_key))
+
+    def __set_one_qubit_gate_set(self):
+        """Set one-qubit gate set to self.one_qubit_gates variable."""
+        self.one_qubit_one_parameterised_gates = [
+            qiskit.circuit.library.RXGate,
+            qiskit.circuit.library.RYGate,
+            qiskit.circuit.library.RZGate,
+            qiskit.circuit.library.PhaseGate,
+        ]
+        self.one_qubit_three_parameterised_gates = [qiskit.circuit.library.UGate]
+        self.one_qubit_non_parametrised_gates = [
+            qiskit.circuit.library.TGate(),
+            qiskit.circuit.library.HGate(),
+        ]
+        self.one_qubit_gates = (
+            self.one_qubit_one_parameterised_gates
+            + self.one_qubit_three_parameterised_gates
+            + self.one_qubit_non_parametrised_gates
+        )
 
     def __select_one_qubit_gates(self):
         """Select one-qubit gates."""

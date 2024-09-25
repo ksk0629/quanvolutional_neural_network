@@ -148,7 +148,7 @@ class QuanvLayer:
         return padded_data
 
     def run_single_channel(self, data: torch.Tensor, shots: int) -> torch.Tensor:
-        """Run the circuit with a single channel image.
+        """Run the circuit with a single channel image data.
 
         :param torch.Tensor data: single channel image data
         :param int shots: number of shots

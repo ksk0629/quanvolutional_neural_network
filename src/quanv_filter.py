@@ -263,7 +263,7 @@ class QuanvFilter:
         return f"{filename_prefix}_quanv_filter_lookup_table.pickle"
 
     def save(self, output_dir: str, filename_prefix: str):
-        """Save the QuanvFilter.
+        """Save the circuit and look-up table if existed as files.
 
         :param str output_dir: path to output dir
         :param str filename_prefix: prefix of output files
@@ -292,7 +292,7 @@ class QuanvFilter:
                 )
 
     def load(self, input_dir: str, filename_prefix):
-        """Load the quantum circuit.
+        """Load the circuit and the look-up table.
 
         :param str input_dir: path to input dir
         :param str filename_prefix: prefix of input files
@@ -309,10 +309,11 @@ class QuanvFilter:
         # Reset the number of qubits.
         self.num_qubits = len(self.quantum_register)
 
-        # Load the look-up table.
+        # Load the look-up table if existed.
         lookup_table_filename = self.get_lookup_table_filename(
             filename_prefix=filename_prefix
         )
         lookup_table_path = os.path.join(input_dir, lookup_table_filename)
-        with open(lookup_table_path, "rb") as lookup_table_file:
-            self.lookup_table = pickle.load(lookup_table_file)
+        if os.path.isfile(lookup_table_path):
+            with open(lookup_table_path, "rb") as lookup_table_file:
+                self.lookup_table = pickle.load(lookup_table_file)

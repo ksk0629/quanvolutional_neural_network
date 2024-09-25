@@ -79,7 +79,7 @@ class QuanvFilter:
                 )
 
     def __set_two_qubit_gate_set(self):
-        """Set two-qubit gate set to self.two_qubit_gates variable."""
+        """Set the member variables related to two-qubit gates."""
         self.two_qubit_four_parameterised_gates = [qiskit.circuit.library.CUGate]
         sqrt_swap_gate = SqrtSwapGate()
         self.two_qubit_non_parameterised_gates = [

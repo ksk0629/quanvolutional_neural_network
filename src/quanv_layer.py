@@ -38,8 +38,8 @@ class QuanvLayer:
         self.padding_mode = padding_mode
         self.is_lookup_mode = is_lookup_mode
 
-        # Define constants.
-        self.__batch_data_dim = 4
+        # Define constant.
+        self.__BATCH_DATA_DIM = 4
 
         # Get the quanvolutional filters.
         self.quanv_filters = [
@@ -54,9 +54,9 @@ class QuanvLayer:
         :return torch.Tensor: processed batch_data whose shape must be [batch size, channel, height, width]
         """
         # Check the dataset shape.
-        if batch_data.ndim != self.__batch_data_dim:
+        if batch_data.ndim != self.__BATCH_DATA_DIM:
             msg = f"""
-                The dimension of the batch_data must be {self.__batch_data_dim},
+                The dimension of the batch_data must be {self.__BATCH_DATA_DIM},
                 which is [batch size, channel, height, width].
             """
             raise ValueError(msg)

@@ -67,7 +67,7 @@ class QuanvFilter:
         )
 
     def __set_connection_probabilities(self):
-        """Randomly assign a connection probability between each qubit."""
+        """Randomly assign connection probabilities between each qubit."""
         for index in range(self.num_qubits):
             for next_index in range(index + 1, self.num_qubits):
                 # Get a random connection probability.

@@ -224,10 +224,10 @@ class QuanvFilter:
         """
         if self.lookup_table is None:
             vectorised_run = np.vectorize(self.run, signature="(n),()->()")
-            possible_outputs = vectorised_run(np.array(input_patterns), shots)
+            output_patterns = vectorised_run(np.array(input_patterns), shots)
             self.lookup_table = {
                 inputs: outputs
-                for inputs, outputs in zip(input_patterns, possible_outputs)
+                for inputs, outputs in zip(input_patterns, output_patterns)
             }
 
     def get_circuit_filename(self, filename_prefix: str):

@@ -24,6 +24,7 @@ class ClassicalCNN(nn.Module):
         self.relu = F.relu
         self.softmax = F.softmax
 
+        # Set the first convolutional layer.
         self.num_filter1 = 50
         self.conv1 = nn.Conv2d(
             in_channels=in_dim[0],
@@ -41,6 +42,8 @@ class ClassicalCNN(nn.Module):
             self.padding,
             self.dilation,
         )
+
+        # Set the first pooling layer.
         self.pool1 = nn.MaxPool2d(kernel_size=self.pool_size, stride=self.pool_size)
         self.pool1_output_shape = self.calc_output_shape(
             self.conv1_output_shape[0],
@@ -51,6 +54,7 @@ class ClassicalCNN(nn.Module):
             self.dilation,
         )
 
+        # Set the second convolutional layer.
         self.num_filter2 = 64
         self.conv2 = nn.Conv2d(
             in_channels=self.num_filter1,
@@ -68,6 +72,8 @@ class ClassicalCNN(nn.Module):
             self.padding,
             self.dilation,
         )
+
+        # Set the second pooling layer.
         self.pool2 = nn.MaxPool2d(kernel_size=self.pool_size, stride=self.pool_size)
         self.pool2_output_shape = self.calc_output_shape(
             self.conv2_output_shape[0],
@@ -78,6 +84,7 @@ class ClassicalCNN(nn.Module):
             self.dilation,
         )
 
+        # Set the first fully connected layer.
         self.fc1_input_size = (
             self.num_filter2 * self.pool2_output_shape[0] * self.pool2_output_shape[1]
         )
@@ -86,8 +93,10 @@ class ClassicalCNN(nn.Module):
             in_features=self.fc1_input_size, out_features=self.fc1_output_size
         )
 
+        # Set the dropout layer.
         self.dropout = nn.Dropout(p=0.4)
 
+        # Set the second fully connected layer.
         self.fc2 = nn.Linear(
             in_features=self.fc1_output_size, out_features=self.num_classes
         )
@@ -101,7 +110,7 @@ class ClassicalCNN(nn.Module):
         padding: int,
         dilation: int,
     ) -> tuple[int, int]:
-        """Calculate an output shape.
+        """Calculate an output shape of convolutional or pooling layers.
 
         :param int in_height: input height
         :param int in_width: input width
@@ -123,12 +132,10 @@ class ClassicalCNN(nn.Module):
         :param torch.Tensor x: input data
         :return torch.Tensor: processed data
         """
-        # The first convolutional and pooling layers result.
         x = self.conv1(x)
         x = self.relu(x)
         x = self.pool1(x)
 
-        # The second convolutional and pooling layers result.
         x = self.conv2(x)
         x = self.relu(x)
         x = self.pool2(x)

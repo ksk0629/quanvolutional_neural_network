@@ -172,18 +172,6 @@ class QuanvLayer:
 
         return outputs
 
-    def run_for_batch_and_save(
-        self, batch_data: torch.Tensor, shots: int, filename: str
-    ):
-        """Run the circuit with the given batch data and save the result.
-
-        :param torch.Tensor batch_data: batch_data
-        :param int shots: number of shots
-        :param str filename: output path
-        """
-        outputs = self.run_for_batch(batch_data=batch_data, shots=shots)
-        torch.save(outputs, filename)
-
     def run_single_channel_with_lookup_tables(self, data: torch.Tensor) -> torch.Tensor:
         """Use the look-up tables to process a single channel image.
 

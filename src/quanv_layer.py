@@ -41,7 +41,7 @@ class QuanvLayer:
         # Define constant.
         self.__BATCH_DATA_DIM = 4
 
-        # Get the quanvolutional filters.
+        # Create the quanvolutional filters.
         self.quanv_filters = [
             QuanvFilter(self.kernel_size) for _ in range(self.num_filters)
         ]

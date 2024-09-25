@@ -171,9 +171,9 @@ class QuanvFilter:
             self.circuit.append(gate, qubits)
 
     def load_data(self, encoded_data: np.ndarray) -> qiskit.QuantumCircuit:
-        """Load the encoded data to the circuit.
+        """Return the circuit attached initialising part to self.circuit.
 
-        :param np.ndarray encoded_data: encoded data
+        :param np.ndarray encoded_data: encoded data, which is a quantum state
         :return qiskit.QuantumCircuit: circuit having data encoded part
         """
         # Build the initialising part.

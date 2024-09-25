@@ -1,4 +1,3 @@
-import itertools
 import os
 import pickle
 
@@ -215,21 +214,20 @@ class QuanvFilter:
 
         return decoded_data
 
-    def make_lookup_table(self, shots: int, threshold: float = 0):
+    def set_lookup_table(
+        self, shots: int, input_patterns: list[tuple[int, int] | tuple[float, float]]
+    ):
         """Make the look-up table.
 
         :param int shots: number of shots
-        :param float threshold: threshold to encode, defaults to 0
+        :param list[tuple[int, int] | tuple[float, float]] input_patterns: input patterns to create look-up table
         """
         if self.lookup_table is None:
-            possible_inputs = list(
-                itertools.product([threshold + 1, threshold], repeat=self.num_qubits)
-            )
             vectorised_run = np.vectorize(self.run, signature="(n),()->()")
-            possible_outputs = vectorised_run(np.array(possible_inputs), shots)
+            possible_outputs = vectorised_run(np.array(input_patterns), shots)
             self.lookup_table = {
                 inputs: outputs
-                for inputs, outputs in zip(possible_inputs, possible_outputs)
+                for inputs, outputs in zip(input_patterns, possible_outputs)
             }
 
     def get_circuit_filename(self, filename_prefix: str):

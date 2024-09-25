@@ -1,9 +1,12 @@
+import itertools
+
 import numpy as np
 import torch
 import torch.nn.functional as F
 from tqdm.auto import tqdm
 
 from quanv_filter import QuanvFilter
+import utils_qnn
 
 
 class QuanvLayer:
@@ -54,8 +57,18 @@ class QuanvLayer:
 
         # Set the appropriate function according to the mode.
         if self.is_lookup_mode:
+            # Make the all possible input patterns.
+            possible_inputs = list(
+                itertools.product(
+                    [utils_qnn.THRESHOLD + 1, utils_qnn.THRESHOLD],
+                    repeat=self.kernel_size[0] * self.kernel_size[1],
+                )
+            )
+            # Set each look-up table.
             [
-                quanv_filter.make_lookup_table(shots=shots)
+                quanv_filter.set_lookup_table(
+                    shots=shots, input_patterns=possible_inputs
+                )
                 for quanv_filter in self.quanv_filters
             ]
             run_single_channel = self.run_single_channel_with_lookup_tables

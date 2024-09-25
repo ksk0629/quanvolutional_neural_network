@@ -145,6 +145,7 @@ class ClassicalCNN(nn.Module):
         dilation: int,
     ) -> tuple[int, int]:
         """Calculate an output shape of convolutional or pooling layers.
+        Referred to https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html.
 
         :param int in_height: input height
         :param int in_width: input width

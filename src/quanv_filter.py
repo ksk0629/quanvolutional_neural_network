@@ -122,7 +122,7 @@ class QuanvFilter:
             self.selected_gates.append((selected_gate, shuffled_qubit_pair))
 
     def __set_one_qubit_gate_set(self):
-        """Set one-qubit gate set to self.one_qubit_gates variable."""
+        """Set the member variables related to one-qubit gates."""
         self.one_qubit_one_parameterised_gates = [
             qiskit.circuit.library.RXGate,
             qiskit.circuit.library.RYGate,

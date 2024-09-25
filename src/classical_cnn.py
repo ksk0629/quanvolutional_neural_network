@@ -188,8 +188,8 @@ class ClassicalCNN(nn.Module):
     def classify(self, x: torch.Tensor) -> torch.Tensor:
         """Classify data.
 
-        :param torch.Tensor x: _description_
-        :return torch.Tensor: _description_
+        :param torch.Tensor x: input data
+        :return torch.Tensor: predicted label
         """
         probabilities = self.forward(x)
         return torch.argmax(probabilities, dim=1)

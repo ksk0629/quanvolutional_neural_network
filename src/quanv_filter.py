@@ -217,7 +217,7 @@ class QuanvFilter:
     def set_lookup_table(
         self, shots: int, input_patterns: list[tuple[int, int] | tuple[float, float]]
     ):
-        """Make the look-up table.
+        """Set the look-up table.
 
         :param int shots: number of shots
         :param list[tuple[int, int] | tuple[float, float]] input_patterns: input patterns to create look-up table

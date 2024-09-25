@@ -1,7 +1,9 @@
 import numpy as np
 
+THRESHOLD = 0
 
-def encode_with_threshold(data: np.ndarray, threshold: float = 0) -> np.ndarray:
+
+def encode_with_threshold(data: np.ndarray, threshold: float = THRESHOLD) -> np.ndarray:
     """Encode the given data according to the threshold. This method is suggested in the original paper.
 
     :param np.ndarray data: original data

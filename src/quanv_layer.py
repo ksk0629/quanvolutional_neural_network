@@ -46,7 +46,7 @@ class QuanvLayer:
             QuanvFilter(self.kernel_size) for _ in range(self.num_filters)
         ]
 
-    def run_for_batch(self, batch_data: torch.Tensor, shots: int) -> torch.Tensor:
+    def run(self, batch_data: torch.Tensor, shots: int) -> torch.Tensor:
         """Run the circuit with the given dataset.
 
         :param torch.Tensor batch_data: batch_data whose shape must be [batch size, channel, height, width]

@@ -57,7 +57,7 @@ class QuanvNN:
         :param int shots: number of shots
         :return torch.Tensor: processed data
         """
-        quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
+        quanvoluted_x = self.quanv_layer.run(batch_data=x, shots=shots)
         return self.classical_cnn(quanvoluted_x)
 
     def classify(self, x: torch.Tensor, shots: int) -> torch.Tensor:
@@ -67,7 +67,7 @@ class QuanvNN:
         :param int shots: number of shots
         :return torch.Tensor: result of classification
         """
-        quanvoluted_x = self.quanv_layer.run_for_batch(batch_data=x, shots=shots)
+        quanvoluted_x = self.quanv_layer.run(batch_data=x, shots=shots)
         return self.classical_cnn.classify(quanvoluted_x)
 
     def get_classical_cnn_filename(self, filename_prefix: str):

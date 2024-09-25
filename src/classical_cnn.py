@@ -8,25 +8,43 @@ import torch.nn.functional as F
 class ClassicalCNN(nn.Module):
     """Classical CNN class."""
 
-    def __init__(self, in_dim: tuple[int, int, int], num_classes: int):
+    def __init__(
+        self,
+        in_dim: tuple[int, int, int],
+        num_classes: int,
+        kernel_size: int = 5,
+        stride: int = 1,
+        padding: int = 0,
+        dilation: int = 1,
+        pool_size: int = 1,
+        num_conv1_filter: int = 50,
+        num_conv2_filter: int = 64,
+    ):
         """Initialise this CNN.
 
         :param tuple[int, int, int] in_dim: input data dimension formed as [channels, height, width]
         :param int num_classes: number of classes to classify
+        :param int kernel_size: kernel size, defaults to 5
+        :param int stride: stride size, defaults to 1
+        :param int padding: padding size, defaults to 0
+        :param int dilation: dialation size, defaults to 1
+        :param int pool_size: pooling size, defaults to 1
+        :param int num_conv1_filter: number of conv1 filters, defaults to 50
+        :param int num_conv2_filter: number of conv2 filters, defaults to 64
         """
         super().__init__()
-        self.kernel_size = 5
-        self.stride = 1
-        self.padding = 0
-        self.dilation = 1
-        self.pool_size = 2
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.pool_size = pool_size
         self.num_classes = num_classes
 
         # Set the first convolutional layer.
-        self.num_filter1 = 50
+        self.num_conv1_filter = num_conv1_filter
         self.conv1 = nn.Conv2d(
             in_channels=in_dim[0],
-            out_channels=self.num_filter1,
+            out_channels=self.num_conv1_filter,
             kernel_size=self.kernel_size,
             stride=self.stride,
             padding=self.padding,
@@ -53,10 +71,10 @@ class ClassicalCNN(nn.Module):
         )
 
         # Set the second convolutional layer.
-        self.num_filter2 = 64
+        self.num_conv2_filter = num_conv2_filter
         self.conv2 = nn.Conv2d(
-            in_channels=self.num_filter1,
-            out_channels=self.num_filter2,
+            in_channels=self.num_conv1_filter,
+            out_channels=self.num_conv2_filter,
             kernel_size=self.kernel_size,
             stride=self.stride,
             padding=self.padding,
@@ -84,7 +102,9 @@ class ClassicalCNN(nn.Module):
 
         # Set the first fully connected layer.
         self.fc1_input_size = (
-            self.num_filter2 * self.pool2_output_shape[0] * self.pool2_output_shape[1]
+            self.num_conv2_filter
+            * self.pool2_output_shape[0]
+            * self.pool2_output_shape[1]
         )
         self.fc1_output_size = 1024
         self.fc1 = nn.Linear(

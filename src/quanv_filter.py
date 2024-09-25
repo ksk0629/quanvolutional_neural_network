@@ -146,7 +146,7 @@ class QuanvFilter:
             # Select a two-qubit gate.
             selected_gate = random.choice(self.one_qubit_gates)
 
-            # Set random parameters to the CU gate.
+            # Set random parameters to the selected gate.
             if selected_gate in self.one_qubit_one_parameterised_gates:
                 gate_one_param = np.random.rand(1) * (2 * np.pi)
                 selected_gate = selected_gate(gate_one_param[0])

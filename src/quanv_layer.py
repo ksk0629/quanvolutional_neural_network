@@ -67,7 +67,10 @@ class QuanvLayer:
             # Set each look-up table.
             [
                 quanv_filter.set_lookup_table(
-                    shots=shots, input_patterns=possible_inputs
+                    encoding_method=utils_qnn.encode_with_threshold,
+                    decoding_method=utils_qnn.decode_by_summing_ones,
+                    shots=shots,
+                    input_patterns=possible_inputs,
                 )
                 for quanv_filter in self.quanv_filters
             ]
@@ -149,11 +152,14 @@ class QuanvLayer:
         ):
             # Vectorise quanvolutional_filter.run function to make it quick.
             vectorized_quanvolutional_filter_run = np.vectorize(
-                quanvolutional_filter.run, signature="(n),()->()"
+                quanvolutional_filter.run, signature="(n),(),(),()->()"
             )
             # Perform each quanvolutional filter.
             outputs[index, :, :] = vectorized_quanvolutional_filter_run(
-                reshaped_strided_data_np, shots
+                reshaped_strided_data_np,
+                utils_qnn.encode_with_threshold,
+                utils_qnn.decode_by_summing_ones,
+                shots,
             ).reshape(data.shape)
         outputs = torch.Tensor(outputs)
         # <<< Numpy computing zone <<<

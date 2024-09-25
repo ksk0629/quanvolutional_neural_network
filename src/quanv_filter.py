@@ -9,7 +9,6 @@ from qiskit import qpy
 import qiskit_aer
 
 from sqrt_swap_gate import SqrtSwapGate
-import utils_qnn
 
 
 class QuanvFilter:
@@ -191,15 +190,23 @@ class QuanvFilter:
         except:
             print(self.circuit.draw())
 
-    def run(self, data: np.ndarray, shots: int) -> int:
+    def run(
+        self,
+        data: np.ndarray,
+        encoding_method: callable,
+        decoding_method: callable,
+        shots: int,
+    ) -> int:
         """Run the circuit, which is the filter.
 
         :param np.ndarray data: input data, which is not encoded
+        :param callable encoding_method: encoding method
+        :param callable decoding_method: decoding method
         :param int shots: number of shots
         :return int: decoded result data
         """
         # Encode the data to the corresponding quantum state.
-        encoded_data = utils_qnn.encode_with_threshold(data)
+        encoded_data = encoding_method(data)
 
         # Make the circuit having the loading part.
         ready_circuit = self.load_data(encoded_data)
@@ -210,21 +217,32 @@ class QuanvFilter:
         counts = result.get_counts(transpiled_circuit)
 
         # Decode the result data.
-        decoded_data = utils_qnn.decode_by_summing_ones(counts)
+        decoded_data = decoding_method(counts)
 
         return decoded_data
 
     def set_lookup_table(
-        self, shots: int, input_patterns: list[tuple[int, int] | tuple[float, float]]
+        self,
+        encoding_method: callable,
+        decoding_method: callable,
+        shots: int,
+        input_patterns: list[tuple[int, int] | tuple[float, float]],
     ):
         """Set the look-up table.
 
+        :param callable encoding_method: encoding method
+        :param callable decoding_method: decoding method
         :param int shots: number of shots
         :param list[tuple[int, int] | tuple[float, float]] input_patterns: input patterns to create look-up table
         """
         if self.lookup_table is None:
-            vectorised_run = np.vectorize(self.run, signature="(n),()->()")
-            output_patterns = vectorised_run(np.array(input_patterns), shots)
+            vectorised_run = np.vectorize(self.run, signature="(n),(),(),()->()")
+            output_patterns = vectorised_run(
+                np.array(input_patterns),
+                encoding_method,
+                decoding_method,
+                shots,
+            )
             self.lookup_table = {
                 inputs: outputs
                 for inputs, outputs in zip(input_patterns, output_patterns)

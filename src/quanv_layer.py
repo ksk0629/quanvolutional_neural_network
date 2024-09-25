@@ -47,7 +47,7 @@ class QuanvLayer:
         ]
 
     def run(self, batch_data: torch.Tensor, shots: int) -> torch.Tensor:
-        """Run the circuit with the given dataset.
+        """Apply the quanvolutional filters to the given batch data.
 
         :param torch.Tensor batch_data: batch_data whose shape must be [batch size, channel, height, width]
         :param int shots: number of shots
@@ -80,15 +80,13 @@ class QuanvLayer:
                 )
                 for quanv_filter in self.quanv_filters
             ]
-            run_single_channel = self.run_single_channel_with_lookup_tables
+            _run = self.run_single_channel_with_lookup_tables
         else:
-            run_single_channel = lambda data: self.run_single_channel(
-                data=data, shots=shots
-            )
+            _run = lambda data: self.run_single_channel(data=data, shots=shots)
 
         all_outputs = torch.stack(
             [
-                run_single_channel(data=channel)
+                _run(data=channel)
                 for data in tqdm(
                     batch_data, leave=True, desc="Dataset"
                 )  # for-loop for batched data

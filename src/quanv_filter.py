@@ -163,8 +163,8 @@ class QuanvFilter:
             self.selected_gates.append((selected_gate, [target_qubit]))
 
     def __apply_selected_gates(self):
-        """Apply the selected gates to the circuit."""
-        # Shuffle the order of gates.
+        """Randomly apply the selected gates to the circuit."""
+        # Shuffle the order of the selected gates.
         random.shuffle(self.selected_gates)
 
         for gate, qubits in self.selected_gates:

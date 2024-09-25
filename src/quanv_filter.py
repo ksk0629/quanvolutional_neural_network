@@ -193,16 +193,16 @@ class QuanvFilter:
             print(self.circuit.draw())
 
     def run(self, data: np.ndarray, shots: int) -> int:
-        """Run this filter.
+        """Run the circuit, which is the filter.
 
         :param np.ndarray data: input data, which is not encoded
         :param int shots: number of shots
         :return int: decoded result data
         """
-        # Encode the data.
+        # Encode the data to the corresponding quantum state.
         encoded_data = utils_qnn.encode_with_threshold(data)
 
-        # Load the data to the circuit.
+        # Make the circuit having the loading part.
         ready_circuit = self.load_data(encoded_data)
 
         # Run the circuit.

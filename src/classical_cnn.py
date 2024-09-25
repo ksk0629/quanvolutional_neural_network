@@ -27,7 +27,7 @@ class ClassicalCNN(nn.Module):
         :param int kernel_size: kernel size, defaults to 5
         :param int stride: stride size, defaults to 1
         :param int padding: padding size, defaults to 0
-        :param int dilation: dialation size, defaults to 1
+        :param int dilation: dilation size, defaults to 1
         :param int pool_size: pooling size, defaults to 1
         :param int num_conv1_filter: number of conv1 filters, defaults to 50
         :param int num_conv2_filter: number of conv2 filters, defaults to 64

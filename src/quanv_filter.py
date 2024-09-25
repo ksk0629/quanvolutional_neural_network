@@ -94,8 +94,8 @@ class QuanvFilter:
 
     def __select_two_qubit_gates(self):
         """Select two-qubit gates."""
-        for key, value in self.connection_probabilities.items():
-            if value <= 0.5:
+        for qubit_pair, connection_probability in self.connection_probabilities.items():
+            if connection_probability <= 0.5:
                 # Skip the pair.
                 pass
 
@@ -112,14 +112,14 @@ class QuanvFilter:
                     gamma=four_params[3],
                 )
 
-            # Shuffle the qubits to rnadomly decide on the target and controlled qubits.
-            shuffled_key = [*key]  # key is tuple. Need to cast to list.
-            if value <= 0.75:
-                shuffled_key[0] = key[1]
-                shuffled_key[1] = key[0]
+            # Shuffle the pair of qubits to randomly decide on the target and controlled qubits.
+            shuffled_qubit_pair = [*qubit_pair]  # key is tuple. Need to cast to list.
+            if connection_probability <= 0.75:
+                shuffled_qubit_pair[0] = qubit_pair[1]
+                shuffled_qubit_pair[1] = qubit_pair[0]
 
             # Keep the selected gate.
-            self.selected_gates.append((selected_gate, shuffled_key))
+            self.selected_gates.append((selected_gate, shuffled_qubit_pair))
 
     def __set_one_qubit_gate_set(self):
         """Set one-qubit gate set to self.one_qubit_gates variable."""

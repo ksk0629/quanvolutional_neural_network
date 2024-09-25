@@ -97,24 +97,15 @@ class QuanvLayer:
         return all_outputs
 
     def get_sliding_window_data(self, data: torch.Tensor) -> torch.Tensor:
-        # Perform padding accodring to the mode to make the output shape as same as the input.
-        padding_size_left = self.kernel_size[1] // 2
-        padding_size_right = self.kernel_size[1] // 2
-        padding_size_top = self.kernel_size[0] // 2
-        padding_size_bottom = self.kernel_size[0] // 2
-        pad = (
-            padding_size_left,
-            padding_size_right,
-            padding_size_top,
-            padding_size_bottom,
-        )
-        padded_data = F.pad(
-            data,
-            pad,
-            mode=self.padding_mode,
-        )
+        """Get the sliding window data.
 
-        # Make the sliding window data.
+        :param torch.Tensor data: input data
+        :return torch.Tensor: data whose each entry is sliding window
+        """
+        # Perform padding accodring to the mode to make the output shape as same as the input.
+        padded_data = self.pad(data)
+
+        # Make the sliding window data whose each entry is sliding window.
         new_shape = (
             padded_data.size(0) - self.kernel_size[0] + 1,
             padded_data.size(1) - self.kernel_size[1] + 1,
@@ -130,6 +121,31 @@ class QuanvLayer:
         )
 
         return sliding_window_data
+
+    def pad(self, data: torch.Tensor) -> torch.Tensor:
+        """Pad the input data.
+
+        :param torch.Tensor data: input data
+        :return torch.Tensor: padded data
+        """
+        # Get the padding sizes.
+        padding_size_left = self.kernel_size[1] // 2
+        padding_size_right = self.kernel_size[1] // 2
+        padding_size_top = self.kernel_size[0] // 2
+        padding_size_bottom = self.kernel_size[0] // 2
+        pad = (
+            padding_size_left,
+            padding_size_right,
+            padding_size_top,
+            padding_size_bottom,
+        )
+        # Pad the data.
+        padded_data = F.pad(
+            data,
+            pad,
+            mode=self.padding_mode,
+        )
+        return padded_data
 
     def run_single_channel(self, data: torch.Tensor, shots: int) -> torch.Tensor:
         """Run the circuit with a single channel image.

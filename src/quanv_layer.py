@@ -16,6 +16,8 @@ class QuanvLayer:
         self,
         kernel_size: tuple[int, int],
         num_filters: int,
+        encoding_method: callable,
+        decoding_method: callable,
         padding_mode: str | None = "constant",
         is_lookup_mode: bool = True,
     ):
@@ -23,12 +25,16 @@ class QuanvLayer:
 
         :param tuple[int, int] kernel_size: kernel size
         :param int num_filters: number of filters
+        :param callable encoding_method: encoding method
+        :param callable decoding_method: decoding method
         :param str | None padding_mode: padding mode (see the document of torch.nn.functional.pad), defaults to "constant"
         :param bool is_lookup_mode: if it is look-up mode, defaults to True
         """
         # Store the arguments to class variables.
         self.kernel_size = kernel_size
         self.num_filters = num_filters
+        self.encoding_method = encoding_method
+        self.decoding_method = decoding_method
         self.padding_mode = padding_mode
         self.is_lookup_mode = is_lookup_mode
 
@@ -67,8 +73,8 @@ class QuanvLayer:
             # Set each look-up table.
             [
                 quanv_filter.set_lookup_table(
-                    encoding_method=utils_qnn.encode_with_threshold,
-                    decoding_method=utils_qnn.decode_by_summing_ones,
+                    encoding_method=self.encoding_method,
+                    decoding_method=self.decoding_method,
                     shots=shots,
                     input_patterns=possible_inputs,
                 )
@@ -157,8 +163,8 @@ class QuanvLayer:
             # Perform each quanvolutional filter.
             outputs[index, :, :] = vectorized_quanvolutional_filter_run(
                 reshaped_strided_data_np,
-                utils_qnn.encode_with_threshold,
-                utils_qnn.decode_by_summing_ones,
+                self.encoding_method,
+                self.decoding_method,
                 shots,
             ).reshape(data.shape)
         outputs = torch.Tensor(outputs)

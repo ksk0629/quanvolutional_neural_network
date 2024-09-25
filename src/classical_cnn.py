@@ -12,7 +12,7 @@ class ClassicalCNN(nn.Module):
         """Initialise this CNN.
 
         :param tuple[int, int, int] in_dim: input data dimension formed as [channels, height, width]
-        :param int num_classes: number of clssses to classify
+        :param int num_classes: number of classes to classify
         """
         super().__init__()
         self.kernel_size = 5
@@ -133,7 +133,7 @@ class ClassicalCNN(nn.Module):
         x = self.relu(x)
         x = self.pool2(x)
 
-        # Transform the output shape to input fully connected layer.
+        # Transform the output shape to input the fully connected layer.
         x = x.view(x.size()[0], -1)
 
         x = self.fc1(x)

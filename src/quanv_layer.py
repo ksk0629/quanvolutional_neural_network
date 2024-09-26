@@ -63,7 +63,7 @@ class QuanvLayer:
 
         # Set the appropriate function according to the mode.
         if self.is_lookup_mode:
-            # Make the all possible input patterns.
+            # Make all possible input patterns.
             possible_inputs = list(
                 itertools.product(
                     [utils_qnn.THRESHOLD + 1, utils_qnn.THRESHOLD],
@@ -102,10 +102,10 @@ class QuanvLayer:
         :param torch.Tensor data: input data
         :return torch.Tensor: data whose each entry is sliding window
         """
-        # Perform padding accodring to the mode to make the output shape as same as the input.
+        # Perform padding according to the mode to make the output shape as same as the input.
         padded_data = self.pad(data)
 
-        # Make the sliding window data whose each entry is sliding window.
+        # Make the sliding window data for each entry that is a sliding window.
         new_shape = (
             padded_data.size(0) - self.kernel_size[0] + 1,
             padded_data.size(1) - self.kernel_size[1] + 1,
@@ -228,7 +228,7 @@ class QuanvLayer:
             for small_window_data in reshaped_sliding_window_data
         ]
 
-        # Make the output data using the look-up tabels.
+        # Make the output data using the look-up tables.
         outputs = np.empty([len(self.quanv_filters), data.shape[-2], data.shape[-1]])
         for index, quanvolutional_filter in enumerate(
             tqdm(self.quanv_filters, leave=False, desc="Filters (Look-up tables)")

@@ -15,7 +15,8 @@ At the moment, the structure of the realisation is as follows.
 4. convolutional layer
 5. pooling layer
 6. dense layer
-7. dense layer (for output)
+7. dropout layer
+8. dense layer (for output)
 
 Only the first layer leverages the power of the quantum computing. There are plenty of information of the classical layers in the digital ocean. So, only the quantum part will be seen in this document.
 

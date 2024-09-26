@@ -3,6 +3,7 @@ import os
 
 import torch
 
+from base_decoder import BaseDecoder
 from base_encoder import BaseEncoder
 from classical_cnn import ClassicalCNN
 from quanv_layer import QuanvLayer
@@ -16,7 +17,7 @@ class QuanvNN:
         quanv_kernel_size: tuple[int, int],
         quanv_num_filters: int,
         quanv_encoder: BaseEncoder,
-        quanv_decoding_method: callable,
+        quanv_decoder: BaseDecoder,
         quanv_padding_mode: str | None = "constant",
         is_lookup_mode: bool = True,
     ):
@@ -27,7 +28,7 @@ class QuanvNN:
         :param tuple[int, int] quanv_kernel_size: size of kernel for quanvolutional layer
         :param int quanv_num_filters: number of quanvolutional filters
         :param BaseEncoder quanv_encoder: encoder for quanvolutional layer
-        :param callable decoding_method: decoding method
+        :param BaseDecoder quanv_decoder: decoder for quanvolutional layer
         :param str | None quanv_padding_mode: padding mode (see the document of torch.nn.functional.pad), defaults to "constant"
         :param bool is_lookup_mode: if it is look-up mode, defaults to True
         """
@@ -36,7 +37,7 @@ class QuanvNN:
         self.quanv_kernel_size = quanv_kernel_size
         self.quanv_num_filters = quanv_num_filters
         self.quanv_encoder = quanv_encoder
-        self.quanv_decoding_method = quanv_decoding_method
+        self.quanv_decoder = quanv_decoder
         self.quanv_padding_mode = quanv_padding_mode
         self.is_lookup_mode = is_lookup_mode
 
@@ -44,7 +45,7 @@ class QuanvNN:
             kernel_size=quanv_kernel_size,
             num_filters=quanv_num_filters,
             encoder=self.quanv_encoder,
-            decoding_method=self.quanv_decoding_method,
+            decoder=self.quanv_decoder,
             padding_mode=quanv_padding_mode,
             is_lookup_mode=is_lookup_mode,
         )

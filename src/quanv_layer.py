@@ -3,9 +3,9 @@ import torch
 import torch.nn.functional as F
 from tqdm.auto import tqdm
 
+from base_decoder import BaseDecoder
 from base_encoder import BaseEncoder
 from quanv_filter import QuanvFilter
-import utils_qnn
 
 
 class QuanvLayer:
@@ -16,7 +16,7 @@ class QuanvLayer:
         kernel_size: tuple[int, int],
         num_filters: int,
         encoder: BaseEncoder,
-        decoding_method: callable,
+        decoder: BaseDecoder,
         padding_mode: str | None = "constant",
         is_lookup_mode: bool = True,
     ):
@@ -25,7 +25,7 @@ class QuanvLayer:
         :param tuple[int, int] kernel_size: kernel size
         :param int num_filters: number of filters
         :param BaseEncoder encoder: encoder
-        :param callable decoding_method: decoding method
+        :param BaseDecoder decoder: decoder
         :param str | None padding_mode: padding mode (see the document of torch.nn.functional.pad), defaults to "constant"
         :param bool is_lookup_mode: if it is look-up mode, defaults to True
         """
@@ -33,7 +33,7 @@ class QuanvLayer:
         self.kernel_size = kernel_size
         self.num_filters = num_filters
         self.encoder = encoder
-        self.decoding_method = decoding_method
+        self.decoder = decoder
         self.padding_mode = padding_mode
         self.is_lookup_mode = is_lookup_mode
 
@@ -70,7 +70,7 @@ class QuanvLayer:
             [
                 quanv_filter.set_lookup_table(
                     encoding_method=self.encoder.encode,
-                    decoding_method=self.decoding_method,
+                    decoding_method=self.decoder.decode,
                     shots=shots,
                     input_patterns=possible_inputs,
                 )
@@ -175,7 +175,7 @@ class QuanvLayer:
             outputs[index, :, :] = vectorized_quanvolutional_filter_run(
                 reshaped_strided_data_np,
                 self.encoder.encode,
-                self.decoding_method,
+                self.decoder.decode,
                 shots,
             ).reshape(data.shape)
         outputs = torch.Tensor(outputs)

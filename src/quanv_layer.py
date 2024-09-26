@@ -193,21 +193,38 @@ class QuanvLayer:
         :param torch.Tensor data: single channel image data
         :return torch.Tensor: processed single channel image data
         """
-        # Get sliding window data.
+        # Get the sliding window data.
         sliding_window_data = self.get_sliding_window_data(data)
 
-        # Reshape and convert the sliding window data into list to use the key of the look-up tables.
+        # Reshape and convert the sliding window data into list.
         reshaped_sliding_window_data = torch.reshape(
             sliding_window_data, (-1, self.kernel_size[0] * self.kernel_size[1])
         ).tolist()
 
         # Define the encoding function.
-        def encode_to_key(data: list[int], threshold: int = 0):
-            return tuple([threshold + 1 if d > threshold else threshold for d in data])
+        def encode_data_to_key(
+            data: list[int], threshold: int = utils_qnn.THRESHOLD
+        ) -> tuple[int, ...]:
+            """Encode the data to one of the keys of the look-up table.
 
-        # Encode the window data to one of the keys.
+            :param list[int] data: input data
+            :param int threshold: threshold, defaults to utils_qnn.THRESHOLD
+            :return tuple[int, ...]: encoded data, which is key
+            """
+            return tuple(
+                [
+                    (
+                        utils_qnn.THRESHOLD + 1
+                        if d > utils_qnn.THRESHOLD
+                        else utils_qnn.THRESHOLD
+                    )
+                    for d in data
+                ]
+            )
+
+        # Encode the window data to one of the keys of the look-up tables.
         encoded_slising_window_data = [
-            encode_to_key(small_window_data)
+            encode_data_to_key(small_window_data)
             for small_window_data in reshaped_sliding_window_data
         ]
 

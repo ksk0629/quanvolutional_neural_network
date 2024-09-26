@@ -10,6 +10,7 @@ from quanv_nn import QuanvNN
 from quanv_nn_trainer import QuanvNNTrainer
 from trainer import Trainer
 import utils_qnn
+from z_basis_encoder import ZBasisEncoder
 
 
 def prepare_classical_cnn(
@@ -100,7 +101,7 @@ def prepare_quanv_nn_trainer(
         num_classes=num_classes,
         quanv_kernel_size=quanv_kernel_size,
         quanv_num_filters=quanv_num_filters,
-        quanv_encoding_method=utils_qnn.encode_through_threshold,
+        quanv_encoder=ZBasisEncoder(),
         quanv_decoding_method=utils_qnn.decode_by_summing_ones,
         quanv_padding_mode=quanv_padding_mode,
     )

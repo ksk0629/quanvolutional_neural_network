@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 
 import torch
 
@@ -90,6 +91,22 @@ class QuanvNN:
         """
         return f"{filename_prefix}_quanv_nn_config.json"
 
+    def get_encoder_filename(self, filename_prefix: str) -> str:
+        """Get encoder filename.
+
+        :param str filename_prefix: prefix of filename
+        :return str: encoder filename
+        """
+        return f"{filename_prefix}_encoder.pickle"
+
+    def get_decoder_filename(self, filename_prefix: str) -> str:
+        """Get decoder filename.
+
+        :param str filename_prefix: prefix of filename
+        :return str: decoder filename
+        """
+        return f"{filename_prefix}_decoder.pickle"
+
     def save(self, output_dir: str, filename_prefix: str):
         """Save the QNN config.
 
@@ -126,6 +143,26 @@ class QuanvNN:
         config_path = os.path.join(quanv_output_dir, config_filename)
         with open(config_path, "w") as config_file:
             json.dump(config, config_file, indent=4)
+
+        # Save the encoder.
+        encoder_filename = self.get_encoder_filename(filename_prefix=filename_prefix)
+        encoder_path = os.path.join(quanv_output_dir, encoder_filename)
+        with open(encoder_path, "wb") as encoder_file:
+            pickle.dump(
+                self.quanv_encoder,
+                encoder_file,
+                protocol=pickle.HIGHEST_PROTOCOL,
+            )
+
+        # Save the decoder.
+        decoder_filename = self.get_encoder_filename(filename_prefix=filename_prefix)
+        decoder_path = os.path.join(quanv_output_dir, decoder_filename)
+        with open(decoder_path, "wb") as decoder_file:
+            pickle.dump(
+                self.quanv_decoder,
+                decoder_file,
+                protocol=pickle.HIGHEST_PROTOCOL,
+            )
 
         # Save each QuanvFilter.
         for index, quanv_filter in enumerate(self.quanv_layer.quanv_filters):
@@ -168,6 +205,18 @@ class QuanvNN:
         self.quanv_layer.kernel_size = self.quanv_kernel_size
         self.quanv_layer.num_filters = self.quanv_num_filters
         self.quanv_layer.padding_mode = self.quanv_padding_mode
+
+        # Load the encoder.
+        encoder_filename = self.get_encoder_filename(filename_prefix=filename_prefix)
+        encoder_path = os.path.join(quanv_input_dir, encoder_filename)
+        with open(encoder_path, "rb") as encoder_file:
+            self.encoder = pickle.load(encoder_file)
+
+        # Load the decoder.
+        decoder_filename = self.get_decoder_filename(filename_prefix=filename_prefix)
+        decoder_path = os.path.join(quanv_input_dir, decoder_filename)
+        with open(decoder_path, "rb") as decoder_file:
+            self.decoder = pickle.load(decoder_file)
 
         # Load each QuanvFilter.
         for index, quanv_filter in enumerate(self.quanv_layer.quanv_filters):

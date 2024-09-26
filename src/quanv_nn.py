@@ -77,17 +77,19 @@ class QuanvNN:
         quanvoluted_x = self.quanv_layer.run(batch_data=x, shots=shots)
         return self.classical_cnn.classify(quanvoluted_x)
 
-    def get_classical_cnn_filename(self, filename_prefix: str):
+    def get_classical_cnn_filename(self, filename_prefix: str) -> str:
         """Get ClassicalCNN filename.
 
         :param str filename_prefix: prefix of filename
+        :return str: ClassicalCNN filename
         """
         return f"{filename_prefix}_classical_cnn_config.pth"
 
-    def get_qnn_config_filename(self, filename_prefix: str):
+    def get_qnn_config_filename(self, filename_prefix: str) -> str:
         """Get QNN config filename.
 
         :param str filename_prefix: prefix of filename
+        :return str: QNN config filename
         """
         return f"{filename_prefix}_quanv_nn_config.json"
 

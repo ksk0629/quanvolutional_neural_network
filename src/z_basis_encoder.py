@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 
 from base_encoder import BaseEncoder
@@ -44,3 +46,20 @@ class ZBasisEncoder(BaseEncoder):
             encoded_data = self.KET_0
 
         return encoded_data
+
+    def get_all_input_patterns(
+        self, num_qubits: int
+    ) -> list[tuple[int, int] | tuple[float, float]]:
+        """Get all input patterns.
+        Remark there are finite patterns corresponding all encoded patterns
+        because this encoder encodes data using threshold.
+
+        :param int num_qubits: number of qubits
+        :return list[tuple[int, int] | tuple[float, float]]: comprehensive input patterns
+        """
+        return list(
+            itertools.product(
+                [self.threshold + 1, self.threshold],
+                repeat=num_qubits,
+            )
+        )

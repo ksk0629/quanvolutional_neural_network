@@ -1,5 +1,3 @@
-import itertools
-
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -64,12 +62,9 @@ class QuanvLayer:
 
         # Set the appropriate function according to the mode.
         if self.is_lookup_mode:
-            # Make all possible input patterns.
-            possible_inputs = list(
-                itertools.product(
-                    [utils_qnn.THRESHOLD + 1, utils_qnn.THRESHOLD],
-                    repeat=self.kernel_size[0] * self.kernel_size[1],
-                )
+            # Get all possible input patterns.
+            possible_inputs = self.encoder.get_all_input_patterns(
+                num_qubits=self.kernel_size[0] * self.kernel_size[1]
             )
             # Set each look-up table.
             [

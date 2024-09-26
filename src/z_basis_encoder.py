@@ -15,7 +15,9 @@ class ZBasisEncoder(BaseEncoder):
         """
         self.threshold = threshold
         self.KET_0 = np.array([1, 0]).astype(np.float64)
+        self.KET_0_REPRESENTATIVE = self.threshold
         self.KET_1 = np.array([0, 1]).astype(np.float64)
+        self.KET_1_REPRESENTATIVE = self.threshold + 1
 
     def encode(self, data: np.ndarray) -> np.ndarray:
         """Encode the data to the product state of z-basis states.
@@ -59,7 +61,25 @@ class ZBasisEncoder(BaseEncoder):
         """
         return list(
             itertools.product(
-                [self.threshold + 1, self.threshold],
+                [self.KET_1_REPRESENTATIVE, self.KET_0_REPRESENTATIVE],
                 repeat=num_qubits,
             )
+        )
+
+    def convert_to_input_boundary(self, data: np.ndarray) -> np.ndarray:
+        """Convert the data to the boundary values.
+        The return value is encoded to the quantum state as same as one encoded from the original input data.
+
+        :param np.ndarray data: input data
+        :return np.ndarray: converted data
+        """
+        return tuple(
+            [
+                (
+                    self.KET_1_REPRESENTATIVE
+                    if d > self.threshold
+                    else self.KET_0_REPRESENTATIVE
+                )
+                for d in data
+            ]
         )

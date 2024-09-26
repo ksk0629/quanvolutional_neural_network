@@ -197,30 +197,9 @@ class QuanvLayer:
             sliding_window_data, (-1, self.kernel_size[0] * self.kernel_size[1])
         ).tolist()
 
-        # Define the encoding function.
-        def encode_data_to_key(
-            data: list[int], threshold: int = utils_qnn.THRESHOLD
-        ) -> tuple[int, ...]:
-            """Encode the data to one of the keys of the look-up table.
-
-            :param list[int] data: input data
-            :param int threshold: threshold, defaults to utils_qnn.THRESHOLD
-            :return tuple[int, ...]: encoded data, which is key
-            """
-            return tuple(
-                [
-                    (
-                        utils_qnn.THRESHOLD + 1
-                        if d > utils_qnn.THRESHOLD
-                        else utils_qnn.THRESHOLD
-                    )
-                    for d in data
-                ]
-            )
-
         # Encode the window data to one of the keys of the look-up tables.
         encoded_slising_window_data = [
-            encode_data_to_key(small_window_data)
+            self.encoder.convert_to_input_boundary(small_window_data)
             for small_window_data in reshaped_sliding_window_data
         ]
 

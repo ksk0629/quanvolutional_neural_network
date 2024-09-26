@@ -3,8 +3,8 @@ import torch
 import torch.nn.functional as F
 from tqdm.auto import tqdm
 
-from base_decoder import BaseDecoder
-from base_encoder import BaseEncoder
+from decoders.base_decoder import BaseDecoder
+from encoders.base_encoder import BaseEncoder
 from quanv_filter import QuanvFilter
 
 

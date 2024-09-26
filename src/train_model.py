@@ -1,16 +1,14 @@
-import sys
 import yaml
 
 import mlflow
 import torch
 
-sys.path.append("./../src")
 from classical_cnn import ClassicalCNN
-from one_sum_decoder import OneSumDecoder
+from decoders.one_sum_decoder import OneSumDecoder
 from quanv_nn import QuanvNN
 from quanv_nn_trainer import QuanvNNTrainer
 from trainer import Trainer
-from z_basis_encoder import ZBasisEncoder
+from encoders.z_basis_encoder import ZBasisEncoder
 
 
 def prepare_classical_cnn(

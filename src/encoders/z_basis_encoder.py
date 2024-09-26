@@ -2,7 +2,7 @@ import itertools
 
 import numpy as np
 
-from base_encoder import BaseEncoder
+from .base_encoder import BaseEncoder
 
 
 class ZBasisEncoder(BaseEncoder):

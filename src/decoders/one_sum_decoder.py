@@ -1,6 +1,4 @@
-import numpy as np
-
-from base_decoder import BaseDecoder
+from .base_decoder import BaseDecoder
 
 
 class OneSumDecoder(BaseDecoder):

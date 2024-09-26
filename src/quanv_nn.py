@@ -4,8 +4,8 @@ import pickle
 
 import torch
 
-from base_decoder import BaseDecoder
-from base_encoder import BaseEncoder
+from decoders.base_decoder import BaseDecoder
+from encoders.base_encoder import BaseEncoder
 from classical_cnn import ClassicalCNN
 from quanv_layer import QuanvLayer
 

@@ -10,6 +10,8 @@ from quanv_layer import QuanvLayer
 
 
 class QuanvNN:
+    """Quanvolutional neural network class."""
+
     def __init__(
         self,
         in_dim: tuple[int, int, int],
@@ -24,7 +26,7 @@ class QuanvNN:
         """Initialise this QNN.
 
         :param tuple[int, int, int] in_dim: input data dimension formed as [channels, height, width]
-        :param int num_classes: number of clssses to classify
+        :param int num_classes: number of classes to classify
         :param tuple[int, int] quanv_kernel_size: size of kernel for quanvolutional layer
         :param int quanv_num_filters: number of quanvolutional filters
         :param BaseEncoder quanv_encoder: encoder for quanvolutional layer
@@ -41,6 +43,7 @@ class QuanvNN:
         self.quanv_padding_mode = quanv_padding_mode
         self.is_lookup_mode = is_lookup_mode
 
+        # Create and store the instance of the QuanvLayer class as a member variable.
         self.quanv_layer = QuanvLayer(
             kernel_size=quanv_kernel_size,
             num_filters=quanv_num_filters,
@@ -49,6 +52,7 @@ class QuanvNN:
             padding_mode=quanv_padding_mode,
             is_lookup_mode=is_lookup_mode,
         )
+        # Create and store the instance of the ClassicalCNN class as a member variable.
         new_in_dim = (quanv_num_filters, in_dim[1], in_dim[2])
         self.classical_cnn = ClassicalCNN(in_dim=new_in_dim, num_classes=num_classes)
 

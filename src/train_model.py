@@ -1,14 +1,14 @@
-import sys
 import yaml
 
 import mlflow
 import torch
 
-sys.path.append("./../src")
 from classical_cnn import ClassicalCNN
+from decoders.one_sum_decoder import OneSumDecoder
 from quanv_nn import QuanvNN
 from quanv_nn_trainer import QuanvNNTrainer
 from trainer import Trainer
+from encoders.z_basis_encoder import ZBasisEncoder
 
 
 def prepare_classical_cnn(
@@ -30,7 +30,7 @@ def prepare_classical_cnn(
     :param torch.utils.data.Dataset train_dataset: train dataset
     :param torch.utils.data.Dataset test_dataset: test dataset
     :param tuple[int, int, int] in_dim: input data dimension formed as [channels, height, width]
-    :param int num_classes: number of clssses to classify
+    :param int num_classes: number of classes to classify
     :param int batch_size: batch size
     :param int epochs: number of epochs
     :param int save_steps: number of steps to save
@@ -79,7 +79,7 @@ def prepare_quanv_nn_trainer(
     :param torch.utils.data.Dataset train_dataset: dataset for training
     :param torch.utils.data.Dataset test_dataset: dataset for test
     :param tuple[int, int, int] in_dim: input data dimension formed as [channels, height, width]
-    :param int num_classes: number of clssses to classify
+    :param int num_classes: number of classes to classify
     :param tuple[int, int] quanv_kernel_size: size of kernel for quanvolutional layer
     :param int quanv_num_filters: number of quanvolutional filters
     :param str | None quanv_padding_mode: padding mode (see the document of torch.nn.functional.pad)
@@ -99,6 +99,8 @@ def prepare_quanv_nn_trainer(
         num_classes=num_classes,
         quanv_kernel_size=quanv_kernel_size,
         quanv_num_filters=quanv_num_filters,
+        quanv_encoder=ZBasisEncoder(),
+        quanv_decoder=OneSumDecoder(),
         quanv_padding_mode=quanv_padding_mode,
     )
     quanv_nn_trainer = QuanvNNTrainer(
@@ -137,7 +139,7 @@ def train(
     config_mlflow = config["mlflow"]
     config_train = config["train"]
     if "model" in config:
-        # Get model config if exsited.
+        # Get the model config if existed.
         config_model = config["model"]
     else:
         # Create model config as an empty dictionary.
@@ -157,7 +159,7 @@ def train(
 
         # Get the appropriate trainer.
         if "quanv_kernel_size" in config_model:
-            # Convert list to tupple as Yaml can't handle tupple but the code assumes tupple.
+            # Convert list to tuple as Yaml can't handle tuple but the code assumes tuple.
             config_model["quanv_kernel_size"] = tuple(config_model["quanv_kernel_size"])
             trainer = prepare_quanv_nn_trainer(
                 train_dataset=train_dataset,

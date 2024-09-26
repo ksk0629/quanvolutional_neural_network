@@ -1,4 +1,3 @@
-import itertools
 import os
 import pickle
 
@@ -10,7 +9,6 @@ from qiskit import qpy
 import qiskit_aer
 
 from sqrt_swap_gate import SqrtSwapGate
-import utils_qnn
 
 
 class QuanvFilter:
@@ -21,7 +19,10 @@ class QuanvFilter:
 
         :param tuple[int, int] kernel_size: kernel size.
         """
+        # Initialise the look-up table.
         self.lookup_table = None
+        # Set the simulator.
+        self.simulator = qiskit_aer.AerSimulator()
 
         # Get the number of qubits.
         self.num_qubits: int = kernel_size[0] * kernel_size[1]
@@ -35,56 +36,24 @@ class QuanvFilter:
 
         # Step 2: Select a two-qubit gate according to the connection probabilities.
         self.selected_gates = []
-        # Define the set of two-qubits gates.
-        self.two_qubit_four_parameterised_gates = [qiskit.circuit.library.CUGate]
-        sqrt_swap_gate = SqrtSwapGate()
-        self.two_qubit_non_parameterised_gates = [
-            qiskit.circuit.library.CXGate(),
-            qiskit.circuit.library.SwapGate(),
-            sqrt_swap_gate.get_gate(),
-        ]
-        self.two_qubit_gates = (
-            self.two_qubit_four_parameterised_gates
-            + self.two_qubit_non_parameterised_gates
-        )
-        # Select two-qubit gates to the circuit.
+        self.__set_two_qubit_gate_set()
         self.__select_two_qubit_gates()
 
         # Step 3: Select one-qubit gates.
-        # Define the set of one-qubit gates.
-        self.one_qubit_one_parameterised_gates = [
-            qiskit.circuit.library.RXGate,
-            qiskit.circuit.library.RYGate,
-            qiskit.circuit.library.RZGate,
-            qiskit.circuit.library.PhaseGate,
-        ]
-        self.one_qubit_three_parameterised_gates = [qiskit.circuit.library.UGate]
-        self.one_qubit_non_parametrised_gates = [
-            qiskit.circuit.library.TGate(),
-            qiskit.circuit.library.HGate(),
-        ]
-        self.one_qubit_gates = (
-            self.one_qubit_one_parameterised_gates
-            + self.one_qubit_three_parameterised_gates
-            + self.one_qubit_non_parametrised_gates
-        )
-        # Select one-qubit gates.
+        self.__set_one_qubit_gate_set()
         self.num_one_qubit_gates = np.random.randint(
             low=0, high=2 * self.num_qubits**2 - 1
         )
         self.__select_one_qubit_gates()
 
-        # Step 4: Apply the randomly selected gates at an random order.
+        # Step 4: Apply the randomly selected gates in an random order.
         self.__apply_selected_gates()
 
         # Step 5: Set measurements to the lot qubits.
         self.circuit.measure(self.quantum_register, self.classical_register)
 
-        # Transpile the circuit.
-        self.simulator = qiskit_aer.AerSimulator()
-
     def __build_initial_circuit(self):
-        """Build the initial ciruit."""
+        """Build the initial circuit."""
         self.quantum_register = qiskit.QuantumRegister(
             size=self.num_qubits, name="quantum_register"
         )
@@ -96,7 +65,7 @@ class QuanvFilter:
         )
 
     def __set_connection_probabilities(self):
-        """Randomly assign a connection probability between each qubit."""
+        """Randomly assign connection probabilities between each qubit."""
         for index in range(self.num_qubits):
             for next_index in range(index + 1, self.num_qubits):
                 # Get a random connection probability.
@@ -107,10 +76,24 @@ class QuanvFilter:
                     connection_probability
                 )
 
+    def __set_two_qubit_gate_set(self):
+        """Set the member variables related to two-qubit gates."""
+        self.two_qubit_four_parameterised_gates = [qiskit.circuit.library.CUGate]
+        sqrt_swap_gate = SqrtSwapGate()
+        self.two_qubit_non_parameterised_gates = [
+            qiskit.circuit.library.CXGate(),
+            qiskit.circuit.library.SwapGate(),
+            sqrt_swap_gate.get_gate(),
+        ]
+        self.two_qubit_gates = (
+            self.two_qubit_four_parameterised_gates
+            + self.two_qubit_non_parameterised_gates
+        )
+
     def __select_two_qubit_gates(self):
         """Select two-qubit gates."""
-        for key, value in self.connection_probabilities.items():
-            if value <= 0.5:
+        for qubit_pair, connection_probability in self.connection_probabilities.items():
+            if connection_probability <= 0.5:
                 # Skip the pair.
                 pass
 
@@ -127,14 +110,33 @@ class QuanvFilter:
                     gamma=four_params[3],
                 )
 
-            # Shuffle the qubits to rnadomly decide on the target and controlled qubits.
-            shuffled_key = [*key]  # key is tuple. Need to cast to list.
-            if value <= 0.75:
-                shuffled_key[0] = key[1]
-                shuffled_key[1] = key[0]
+            # Shuffle the pair of qubits to randomly decide on the target and controlled qubits.
+            shuffled_qubit_pair = [*qubit_pair]  # key is tuple. Need to cast to list.
+            if connection_probability <= 0.75:
+                shuffled_qubit_pair[0] = qubit_pair[1]
+                shuffled_qubit_pair[1] = qubit_pair[0]
 
             # Keep the selected gate.
-            self.selected_gates.append((selected_gate, shuffled_key))
+            self.selected_gates.append((selected_gate, shuffled_qubit_pair))
+
+    def __set_one_qubit_gate_set(self):
+        """Set the member variables related to one-qubit gates."""
+        self.one_qubit_one_parameterised_gates = [
+            qiskit.circuit.library.RXGate,
+            qiskit.circuit.library.RYGate,
+            qiskit.circuit.library.RZGate,
+            qiskit.circuit.library.PhaseGate,
+        ]
+        self.one_qubit_three_parameterised_gates = [qiskit.circuit.library.UGate]
+        self.one_qubit_non_parametrised_gates = [
+            qiskit.circuit.library.TGate(),
+            qiskit.circuit.library.HGate(),
+        ]
+        self.one_qubit_gates = (
+            self.one_qubit_one_parameterised_gates
+            + self.one_qubit_three_parameterised_gates
+            + self.one_qubit_non_parametrised_gates
+        )
 
     def __select_one_qubit_gates(self):
         """Select one-qubit gates."""
@@ -142,7 +144,7 @@ class QuanvFilter:
             # Select a two-qubit gate.
             selected_gate = random.choice(self.one_qubit_gates)
 
-            # Set random parameters to the CU gate.
+            # Set random parameters to the selected gate.
             if selected_gate in self.one_qubit_one_parameterised_gates:
                 gate_one_param = np.random.rand(1) * (2 * np.pi)
                 selected_gate = selected_gate(gate_one_param[0])
@@ -159,17 +161,17 @@ class QuanvFilter:
             self.selected_gates.append((selected_gate, [target_qubit]))
 
     def __apply_selected_gates(self):
-        """Apply the selected gates to the circuit."""
-        # Shuffle the order of gates.
+        """Randomly apply the selected gates to the circuit."""
+        # Shuffle the order of the selected gates.
         random.shuffle(self.selected_gates)
 
         for gate, qubits in self.selected_gates:
             self.circuit.append(gate, qubits)
 
     def load_data(self, encoded_data: np.ndarray) -> qiskit.QuantumCircuit:
-        """Load the encoded data to the cirucit.
+        """Return the circuit attached initialising part to self.circuit.
 
-        :param np.ndarray encoded_data: encoded data
+        :param np.ndarray encoded_data: encoded data, which is a quantum state
         :return qiskit.QuantumCircuit: circuit having data encoded part
         """
         # Build the initialising part.
@@ -188,17 +190,25 @@ class QuanvFilter:
         except:
             print(self.circuit.draw())
 
-    def run(self, data: np.ndarray, shots: int) -> int:
-        """Run this filter.
+    def run(
+        self,
+        data: np.ndarray,
+        encoding_method: callable,
+        decoding_method: callable,
+        shots: int,
+    ) -> int:
+        """Run the circuit, which is the filter.
 
         :param np.ndarray data: input data, which is not encoded
+        :param callable encoding_method: encoding method
+        :param callable decoding_method: decoding method
         :param int shots: number of shots
         :return int: decoded result data
         """
-        # Encode the data.
-        encoded_data = utils_qnn.encode_with_threshold(data)
+        # Encode the data to the corresponding quantum state.
+        encoded_data = encoding_method(data)
 
-        # Load the data to the circuit.
+        # Make the circuit having the loading part.
         ready_circuit = self.load_data(encoded_data)
 
         # Run the circuit.
@@ -207,25 +217,35 @@ class QuanvFilter:
         counts = result.get_counts(transpiled_circuit)
 
         # Decode the result data.
-        decoded_data = utils_qnn.decode_by_summing_ones(counts)
+        decoded_data = decoding_method(counts)
 
         return decoded_data
 
-    def make_lookup_table(self, shots: int, threshold: float = 0):
-        """Make the look-up table.
+    def set_lookup_table(
+        self,
+        encoding_method: callable,
+        decoding_method: callable,
+        shots: int,
+        input_patterns: list[tuple[int, int] | tuple[float, float]],
+    ):
+        """Set the look-up table.
 
+        :param callable encoding_method: encoding method
+        :param callable decoding_method: decoding method
         :param int shots: number of shots
-        :param float threshold: threshold to encode, defaults to 0
+        :param list[tuple[int, int] | tuple[float, float]] input_patterns: input patterns to create look-up table
         """
         if self.lookup_table is None:
-            possible_inputs = list(
-                itertools.product([threshold + 1, threshold], repeat=self.num_qubits)
+            vectorised_run = np.vectorize(self.run, signature="(n),(),(),()->()")
+            output_patterns = vectorised_run(
+                np.array(input_patterns),
+                encoding_method,
+                decoding_method,
+                shots,
             )
-            vectorised_run = np.vectorize(self.run, signature="(n),()->()")
-            possible_outputs = vectorised_run(np.array(possible_inputs), shots)
             self.lookup_table = {
                 inputs: outputs
-                for inputs, outputs in zip(possible_inputs, possible_outputs)
+                for inputs, outputs in zip(input_patterns, output_patterns)
             }
 
     def get_circuit_filename(self, filename_prefix: str):
@@ -243,7 +263,7 @@ class QuanvFilter:
         return f"{filename_prefix}_quanv_filter_lookup_table.pickle"
 
     def save(self, output_dir: str, filename_prefix: str):
-        """Save the QuanvFilter.
+        """Save the circuit and look-up table if existed as files.
 
         :param str output_dir: path to output dir
         :param str filename_prefix: prefix of output files
@@ -258,7 +278,7 @@ class QuanvFilter:
         with open(circuit_path, "wb") as file:
             qpy.dump(self.circuit, file)
 
-        # Save the look-up tabel if it is not None.
+        # Save the look-up table if it is not None.
         if self.lookup_table is not None:
             lookup_table_filename = self.get_lookup_table_filename(
                 filename_prefix=filename_prefix
@@ -272,7 +292,7 @@ class QuanvFilter:
                 )
 
     def load(self, input_dir: str, filename_prefix):
-        """Load the quantum circuit.
+        """Load the circuit and the look-up table.
 
         :param str input_dir: path to input dir
         :param str filename_prefix: prefix of input files
@@ -289,10 +309,11 @@ class QuanvFilter:
         # Reset the number of qubits.
         self.num_qubits = len(self.quantum_register)
 
-        # Load the look-up table.
+        # Load the look-up table if exists.
         lookup_table_filename = self.get_lookup_table_filename(
             filename_prefix=filename_prefix
         )
         lookup_table_path = os.path.join(input_dir, lookup_table_filename)
-        with open(lookup_table_path, "rb") as lookup_table_file:
-            self.lookup_table = pickle.load(lookup_table_file)
+        if os.path.isfile(lookup_table_path):
+            with open(lookup_table_path, "rb") as lookup_table_file:
+                self.lookup_table = pickle.load(lookup_table_file)

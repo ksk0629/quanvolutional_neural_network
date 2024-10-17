@@ -1,0 +1,10 @@
+mlflow:
+  experiment_name: cifar10
+  run_name: cnn
+train:
+  epochs: 20
+  batch_size: 256
+  save_steps: 100
+  random_seed: 91
+  model_output_dir: models/cifar10_cnn
+  model_name: model

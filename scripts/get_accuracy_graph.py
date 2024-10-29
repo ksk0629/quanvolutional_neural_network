@@ -14,6 +14,8 @@ from torchvision import datasets
 import torchvision.transforms as transforms
 
 from classical_cnn import ClassicalCNN
+from decoders.one_sum_decoder import OneSumDecoder
+from encoders.z_basis_encoder import ZBasisEncoder
 from quanv_nn import QuanvNN
 
 
@@ -53,6 +55,8 @@ if __name__ == "__main__":
         num_classes,
         quanv_kernel_size,
         quanv_num_filters,
+        ZBasisEncoder(),
+        OneSumDecoder(),
         quanv_padding_mode,
     )
     filename_prefix = "model"  # CHANGE

@@ -80,23 +80,15 @@ class QuanvLayer:
         else:
             _run = lambda data: self.run_single_channel(data=data, shots=shots)
 
-        # Make the empty outputs.
-        batch_size, _, height, width = batch_data.size()
-        num_channels_output = len(batch_data[0]) * self.num_filters
-        all_outputs = torch.empty((batch_size, num_channels_output, height, width))
-        # Process all data.
-        for data_index, data in enumerate(tqdm(batch_data, leave=True, desc="Dataset")):
-            for channel_index, channel in enumerate(data):
-                current_channel_index_start = channel_index * self.num_filters
-                current_channel_index_end = (
-                    channel_index * self.num_filters + self.num_filters
-                )
-                all_outputs[
-                    data_index,
-                    current_channel_index_start:current_channel_index_end,
-                    :,
-                    :,
-                ] = _run(data=channel)
+        all_outputs = torch.stack(
+            [
+                _run(data=channel)
+                for data in tqdm(
+                    batch_data, leave=True, desc="Dataset"
+                )  # for-loop for batched data
+                for channel in data  # for-loop for each channel of each data
+            ]
+        )
 
         return all_outputs
 

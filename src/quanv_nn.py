@@ -54,7 +54,7 @@ class QuanvNN:
             is_lookup_mode=is_lookup_mode,
         )
         # Create and store the instance of the ClassicalCNN class as a member variable.
-        new_in_dim = (quanv_num_filters * in_dim[0], in_dim[1], in_dim[2])
+        new_in_dim = (quanv_num_filters, in_dim[1], in_dim[2])
         self.classical_cnn = ClassicalCNN(in_dim=new_in_dim, num_classes=num_classes)
 
     def __call__(self, x: torch.Tensor, shots: int) -> torch.Tensor:
@@ -157,7 +157,7 @@ class QuanvNN:
             )
 
         # Save the decoder.
-        decoder_filename = self.get_decoder_filename(filename_prefix=filename_prefix)
+        decoder_filename = self.get_encoder_filename(filename_prefix=filename_prefix)
         decoder_path = os.path.join(quanv_output_dir, decoder_filename)
         with open(decoder_path, "wb") as decoder_file:
             pickle.dump(
